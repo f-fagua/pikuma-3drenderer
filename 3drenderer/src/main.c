@@ -109,14 +109,11 @@ void update(void)
 
 void draw_grid(int grid_size, uint32_t grid_color)
 {
-	for (int y = 0; y < window_height; y++) 
+	for (int y = 0; y < window_height; y += grid_size) 
 	{
-		for (int x = 0; x < window_width; x++)
+		for (int x = 0; x < window_width; x += grid_size)
 		{
-			if (y % grid_size == 0 || x % grid_size == 0) 
-			{
-				color_buffer[(window_width * y) + x] = grid_color;
-			}
+			color_buffer[(window_width * y) + x] = grid_color;
 		}
 	}
 }
