@@ -1,2 +1,4 @@
 # Ignoring the build
 /3drenderer/[Bb]in/
+
+*.DS_Store
