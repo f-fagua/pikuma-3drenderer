@@ -3,11 +3,11 @@ void draw_line(int x0, int y0, int x1, int y1)
 	int delta_x = (x1 - x0); // run
 	int delta_y = (y1 - y0); // rise
 
-	int side_length = abs(delta_x);
+	int side_length = abs(delta_x) >= abs(delta_y) ? abs(delta_x) : abs(delta_y); // We need to pick the largest to do the increment by 1
 
 	// Find how much we should increment in both x and y each step
-	float x_inc = delta_x / (float)side_length; // 1, -1, or 0
-	float y_inc = delta_y / (float)side_length; // not always 1, it depends on the slope
+	float x_inc = delta_x / (float)side_length; // (depending the greater) 1, -1, or 0 
+	float y_inc = delta_y / (float)side_length; // (depending the greater) not always 1, it depends on the slope
 
 	float current_x = x0;
 	float current_y = y0;
