@@ -83,21 +83,28 @@ void draw_line(int x0, int y0, int x1, int y1, uint32_t color)
 	int delta_x = (x1 - x0); // run
 	int delta_y = (y1 - y0); // rise
 
-	int side_length = abs(delta_x) >= abs(delta_y) ? abs(delta_x) : abs(delta_y); // We need to pick the largest to do the increment by 1
+	int longest_side_length = abs(delta_x) >= abs(delta_y) ? abs(delta_x) : abs(delta_y); // We need to pick the largest to do the increment by 1
 
 	// Find how much we should increment in both x and y each step
-	float x_inc = delta_x / (float)side_length; // (depending the greater) 1, -1, or 0 
-	float y_inc = delta_y / (float)side_length; // (depending the greater) not always 1, it depends on the slope
+	float x_inc = delta_x / (float)longest_side_length; // (depending the longest) 1, -1, or 0 
+	float y_inc = delta_y / (float)longest_side_length; // (depending the longest) not always 1, it depends on the slope
 
 	float current_x = x0;
 	float current_y = y0;
 
-	for (int i = 0; i <= side_length; i++) 
+	for (int i = 0; i <= longest_side_length; i++) 
 	{
 		draw_pixel(round(current_x), round(current_y), color);
 		current_x += x_inc;
 		current_y += y_inc;
 	}
+}
+
+void draw_triangle(int x0, int y0, int x1, int y1, int x2, int y2, uint32_t color)
+{
+	draw_line(x0, y0, x1, y1, color);
+	draw_line(x1, y1, x2, y2, color);
+	draw_line(x2, y2, x0, y0, color);
 }
 
 void draw_rect(int rect_x, int rect_y, int width, int height, uint32_t rect_color) 
