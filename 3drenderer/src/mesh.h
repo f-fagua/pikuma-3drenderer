@@ -24,5 +24,8 @@ typedef struct
 extern mesh_t mesh;		// global variable mesh
 
 void load_cube_mesh_data(void);
+void load_obj_file_data(char* filename);
+vec3_t parse_vertex(char* line);
+face_t parse_face(char* line);
 
 #endif
