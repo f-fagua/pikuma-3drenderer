@@ -2,20 +2,28 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <SDL2/SDL.h>
+#include "array.h"
 #include "display.h"
 #include "vector.h"
 #include "mesh.h"
 
-triangle_t triangles_to_render[N_MESH_FACES];
+////////////////////////////////////////////////////////////////////////////////
+// Array of triangles that should be renderer frame by frame
+////////////////////////////////////////////////////////////////////////////////
+triangle_t* triangles_to_render = NULL;
 
-vec3_t camera_postition = {.x = 0, .y = 0, .z = -5};
-vec3_t cube_rotation = { .x = 0, .y = 0, .z = 0};
-
-float fov_factor = 640;
-
+////////////////////////////////////////////////////////////////////////////////
+// Global variables for execution status and game loop
+////////////////////////////////////////////////////////////////////////////////
 bool is_running = false;
 int previous_frame_time = 0;
 
+vec3_t camera_postition = {.x = 0, .y = 0, .z = -5};
+float fov_factor = 640;
+
+////////////////////////////////////////////////////////////////////////////////
+// setup function to initialize variables and game objects
+////////////////////////////////////////////////////////////////////////////////
 void setup(void) 
 {
 	// Allocate the required bytes in memory for the color buffer
@@ -30,8 +38,14 @@ void setup(void)
 		window_width,
 		window_height
 	);
+
+	// Loads the cube values in the mesh data structure
+	load_cube_mesh_data();
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// Poll system events and handle keyboard input
+////////////////////////////////////////////////////////////////////////////////
 void process_input(void)
 {
 	SDL_Event event;
@@ -58,7 +72,6 @@ void process_input(void)
 ////////////////////////////////////////////////////////////////////////////////
 // Function that revieves a 3D vector and returns a projected 2D point
 ////////////////////////////////////////////////////////////////////////////////
-
 vec2_t project(vec3_t point) 
 {
 	vec2_t projected_point = 
@@ -83,18 +96,23 @@ void update(void)
 	
 	previous_frame_time = SDL_GetTicks();
 
-	cube_rotation.x += 0.01;
-	cube_rotation.y += 0.01;
-	cube_rotation.z += 0.01;
+	// Initialize the array of triangles to render
+	triangles_to_render = NULL;
+
+	mesh.rotation.x += 0.01;
+	mesh.rotation.y += 0.01;
+	mesh.rotation.z += 0.01;
 	
-	for (int i = 0; i < N_MESH_FACES; i++) 
+	int num_faces = array_length(mesh.faces);
+
+	for (int i = 0; i < num_faces; i++) 
 	{
-		face_t mesh_face = mesh_faces[i];
+		face_t mesh_face = mesh.faces[i];
 
 		vec3_t face_vertices[3];
-		face_vertices[0] = mesh_vertices[mesh_face.a - 1];
-		face_vertices[1] = mesh_vertices[mesh_face.b - 1];
-		face_vertices[2] = mesh_vertices[mesh_face.c - 1];
+		face_vertices[0] = mesh.vertices[mesh_face.a - 1];
+		face_vertices[1] = mesh.vertices[mesh_face.b - 1];
+		face_vertices[2] = mesh.vertices[mesh_face.c - 1];
 
 		triangle_t projected_triangle;
 
@@ -103,9 +121,9 @@ void update(void)
 		{
 			vec3_t transformed_vertex = face_vertices[j];
 			
-			transformed_vertex = vec3_rotate_x(transformed_vertex, cube_rotation.x);
-			transformed_vertex = vec3_rotate_y(transformed_vertex, cube_rotation.y);
-			transformed_vertex = vec3_rotate_x(transformed_vertex, cube_rotation.z);
+			transformed_vertex = vec3_rotate_x(transformed_vertex, mesh.rotation.x);
+			transformed_vertex = vec3_rotate_y(transformed_vertex, mesh.rotation.y);
+			transformed_vertex = vec3_rotate_x(transformed_vertex, mesh.rotation.z);
 			
 			// Translate the vertex away from the camera
 			transformed_vertex.z -= camera_postition.z;
@@ -121,23 +139,27 @@ void update(void)
 		}
 
 		// Save the projected triangle in the array of triangles to render
-		triangles_to_render[i] = projected_triangle;
+		array_push(triangles_to_render, projected_triangle);
 	}
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// Render function to draw objects on the display
+////////////////////////////////////////////////////////////////////////////////
 void render(void)
 {
 	draw_grid(10, 0xFF333333);
 
 	// Loop all projected triangles and render them
-	for (int i = 0; i < N_MESH_FACES; i++) 
+	int num_triangles = array_length(triangles_to_render);
+	for (int i = 0; i < num_triangles; i++) 
 	{
 		triangle_t triangle = triangles_to_render[i];
 
 		// Draw vertex points
-		draw_rect(triangle.points[0].x, triangle.points[0].y, 3, 3, 0xFFFFFF00);
-		draw_rect(triangle.points[1].x, triangle.points[1].y, 3, 3, 0xFFFFFF00);
-		draw_rect(triangle.points[2].x, triangle.points[2].y, 3, 3, 0xFFFFFF00);
+		draw_rect(triangle.points[0].x, triangle.points[0].y, 3, 3, 0xFFFFFF00); // vertex A
+		draw_rect(triangle.points[1].x, triangle.points[1].y, 3, 3, 0xFFFFFF00); // vertex B
+		draw_rect(triangle.points[2].x, triangle.points[2].y, 3, 3, 0xFFFFFF00); // vertex C
 		
 		// Draw unfilled triangle
 		draw_triangle(
@@ -151,11 +173,25 @@ void render(void)
 		);
 	}
 
+	// Clear the array of triangles to render every frame loop
+	array_free(triangles_to_render);
+
 	render_color_buffer();
 	
 	clear_color_buffer(0xFF000000);
 
 	SDL_RenderPresent(renderer);
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+// Frees memory that was dinamically allocated
+////////////////////////////////////////////////////////////////////////////////
+void free_resources(void) 
+{
+	free(color_buffer);
+	array_free(mesh.faces);
+	array_free(mesh.vertices);
 }
 
 int main(void)
@@ -172,6 +208,7 @@ int main(void)
 	}
 
 	destroy_window();
+	free_resources();
 
 	return 0;	
 }
