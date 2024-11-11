@@ -16,13 +16,6 @@ triangle_t* triangles_to_render = NULL;
 // Global variables for execution status and game loop
 ////////////////////////////////////////////////////////////////////////////////
 bool is_running = false;
-
-bool is_drawing_fill = true; 
-bool is_drawing_wireframe = true;
-bool is_drawing_dots = true;
-
-bool is_back_face_culling = true;
-
 int previous_frame_time = 0;
 
 vec3_t camera_postition = {.x = 0, .y = 0, .z = 0};
@@ -33,6 +26,11 @@ float fov_factor = 640;
 ////////////////////////////////////////////////////////////////////////////////
 void setup(void) 
 {
+	// Initialize render mode and triangle culling method
+	render_method = RENDER_WIRE;
+	cull_method = CULL_BACKFACE;
+	
+
 	// Allocate the required bytes in memory for the color buffer
 	color_buffer = (uint32_t*) malloc(sizeof(uint32_t) * window_width * window_height);
 	
@@ -73,35 +71,27 @@ void process_input(void)
 			}
 			if (event.key.keysym.sym == SDLK_1)
 			{
-				is_drawing_fill 		= false; 
-				is_drawing_wireframe	= true;
-				is_drawing_dots	 		= true;
+				render_method = RENDER_WIRE_VERTEX;
 			}
 			if (event.key.keysym.sym == SDLK_2)
 			{
-				is_drawing_fill 		= false; 
-				is_drawing_wireframe	= true;
-				is_drawing_dots	 		= false;
+				render_method = RENDER_WIRE;
 			}
 			if (event.key.keysym.sym == SDLK_3)
 			{
-				is_drawing_fill 		= true; 
-				is_drawing_wireframe	= false;
-				is_drawing_dots	 		= false;
+				render_method = RENDER_FILL_TRIANGLE;
 			}
 			if (event.key.keysym.sym == SDLK_4)
 			{
-				is_drawing_fill 		= true; 
-				is_drawing_wireframe	= true;
-				is_drawing_dots	 		= false;
+				render_method = RENDER_FILL_TRIANGLE_WIRE;
 			}
 			if (event.key.keysym.sym == SDLK_c)
 			{
-				is_back_face_culling = true;
+				cull_method = CULL_BACKFACE;
 			}
 			if (event.key.keysym.sym == SDLK_d)
 			{
-				is_back_face_culling = false;
+				cull_method = CULL_NONE;
 			}
 			break;
 		}
@@ -172,31 +162,34 @@ void update(void)
 		}
 
 		// TODO: Check backface culling
-		vec3_t vector_a = transformed_vertices[0]; /*   A   */
-		vec3_t vector_b = transformed_vertices[1]; /*  / \  */
-		vec3_t vector_c = transformed_vertices[2]; /* C---B */
-
-		// Get the vector substraction of B-A and C-A
-		vec3_t vector_ab = vec3_sub(vector_b, vector_a);
-		vec3_t vector_ac = vec3_sub(vector_c, vector_a);
-		vec3_normalize(&vector_ab);
-		vec3_normalize(&vector_ac);
-		
-		// Compute the face normal (using cross product to find perpendicular)
-		vec3_t normal = vec3_cross(vector_ab, vector_ac);
-
-		// Normalize the face normal vector
-		vec3_normalize(&normal);
-
-		// Find the vector between a point in the triangle and the camera origin 
-		vec3_t camera_ray = vec3_sub(camera_postition, vector_a);
-
-		// Calculate how aligned the camera ray is with the face normal (using dot product)
-		float dot_normal_camera = vec3_dot(normal, camera_ray);
-
-		if (dot_normal_camera < 0 && is_back_face_culling) 
+		if (cull_method == CULL_BACKFACE) 
 		{
-			continue;
+			vec3_t vector_a = transformed_vertices[0]; /*   A   */
+			vec3_t vector_b = transformed_vertices[1]; /*  / \  */
+			vec3_t vector_c = transformed_vertices[2]; /* C---B */
+
+			// Get the vector substraction of B-A and C-A
+			vec3_t vector_ab = vec3_sub(vector_b, vector_a);
+			vec3_t vector_ac = vec3_sub(vector_c, vector_a);
+			vec3_normalize(&vector_ab);
+			vec3_normalize(&vector_ac);
+			
+			// Compute the face normal (using cross product to find perpendicular)
+			vec3_t normal = vec3_cross(vector_ab, vector_ac);
+
+			// Normalize the face normal vector
+			vec3_normalize(&normal);
+
+			// Find the vector between a point in the triangle and the camera origin 
+			vec3_t camera_ray = vec3_sub(camera_postition, vector_a);
+
+			// Calculate how aligned the camera ray is with the face normal (using dot product)
+			float dot_normal_camera = vec3_dot(normal, camera_ray);
+
+			if (dot_normal_camera < 0) 
+			{
+				continue;
+			}
 		}
 
 		triangle_t projected_triangle;
@@ -233,28 +226,28 @@ void render(void)
 		triangle_t triangle = triangles_to_render[i];
 
 		// Draw filled triangle
-		if (is_drawing_fill)
+		if (render_method == RENDER_FILL_TRIANGLE || render_method == RENDER_FILL_TRIANGLE_WIRE)
 		{
 			draw_filled_triangle(
 				triangle.points[0].x, triangle.points[0].y, 	// vertex A
 				triangle.points[1].x, triangle.points[1].y,		// vertex B
 				triangle.points[2].x, triangle.points[2].y, 	// vertex C
-				0xFFFFFFFF
+				0xFF555555
 			);
 		}
 		 
-		if (is_drawing_wireframe)
+		if (render_method == RENDER_WIRE || render_method == RENDER_WIRE_VERTEX || render_method == RENDER_FILL_TRIANGLE_WIRE)
 		{
 			// Draw unfilled triangle
 			draw_triangle(
 				triangle.points[0].x, triangle.points[0].y, 	// vertex A
 				triangle.points[1].x, triangle.points[1].y,		// vertex B
 				triangle.points[2].x, triangle.points[2].y, 	// vertex C
-				0xFF00FF00
+				0xFFFFFFFF
 			);	
 		}
 
-		if (is_drawing_dots)
+		if (render_method == RENDER_WIRE_VERTEX )
 		{
 			draw_rect(triangle.points[0].x, triangle.points[0].y, 2, 2, 0xFFFF0000);
 			draw_rect(triangle.points[1].x, triangle.points[1].y, 2, 2, 0xFFFF0000);
