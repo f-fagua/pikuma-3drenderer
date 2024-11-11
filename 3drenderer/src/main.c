@@ -16,6 +16,13 @@ triangle_t* triangles_to_render = NULL;
 // Global variables for execution status and game loop
 ////////////////////////////////////////////////////////////////////////////////
 bool is_running = false;
+
+bool is_drawing_fill = true; 
+bool is_drawing_wireframe = true;
+bool is_drawing_dots = true;
+
+bool is_back_face_culling = true;
+
 int previous_frame_time = 0;
 
 vec3_t camera_postition = {.x = 0, .y = 0, .z = 0};
@@ -63,6 +70,38 @@ void process_input(void)
 			if (event.key.keysym.sym == SDLK_ESCAPE)
 			{
 				is_running = false;
+			}
+			if (event.key.keysym.sym == SDLK_1)
+			{
+				is_drawing_fill 		= false; 
+				is_drawing_wireframe	= true;
+				is_drawing_dots	 		= true;
+			}
+			if (event.key.keysym.sym == SDLK_2)
+			{
+				is_drawing_fill 		= false; 
+				is_drawing_wireframe	= true;
+				is_drawing_dots	 		= false;
+			}
+			if (event.key.keysym.sym == SDLK_3)
+			{
+				is_drawing_fill 		= true; 
+				is_drawing_wireframe	= false;
+				is_drawing_dots	 		= false;
+			}
+			if (event.key.keysym.sym == SDLK_4)
+			{
+				is_drawing_fill 		= true; 
+				is_drawing_wireframe	= true;
+				is_drawing_dots	 		= false;
+			}
+			if (event.key.keysym.sym == SDLK_c)
+			{
+				is_back_face_culling = true;
+			}
+			if (event.key.keysym.sym == SDLK_d)
+			{
+				is_back_face_culling = false;
 			}
 			break;
 		}
@@ -155,7 +194,7 @@ void update(void)
 		// Calculate how aligned the camera ray is with the face normal (using dot product)
 		float dot_normal_camera = vec3_dot(normal, camera_ray);
 
-		if (dot_normal_camera < 0) 
+		if (dot_normal_camera < 0 && is_back_face_culling) 
 		{
 			continue;
 		}
@@ -188,26 +227,42 @@ void render(void)
 	draw_grid(10, 0xFF333333);
 
 	// Loop all projected triangles and render them
-	//int num_triangles = array_length(triangles_to_render);
-	//for (int i = 0; i < num_triangles; i++) 
-	//{
-	//	triangle_t triangle = triangles_to_render[i];
-	//
-	//	// Draw vertex points
-	//	draw_rect(triangle.points[0].x, triangle.points[0].y, 3, 3, 0xFFFFFF00); // vertex A
-	//	draw_rect(triangle.points[1].x, triangle.points[1].y, 3, 3, 0xFFFFFF00); // vertex B
-	//	draw_rect(triangle.points[2].x, triangle.points[2].y, 3, 3, 0xFFFFFF00); // vertex C
-	//	
-	//	// Draw unfilled triangle
-	//	draw_triangle(
-	//		triangle.points[0].x, triangle.points[0].y, 	// vertex A
-	//		triangle.points[1].x, triangle.points[1].y,		// vertex B
-	//		triangle.points[2].x, triangle.points[2].y, 	// vertex C
-	//		0xFF00FF00
-	//	);
-	//}
+	int num_triangles = array_length(triangles_to_render);
+	for (int i = 0; i < num_triangles; i++) 
+	{
+		triangle_t triangle = triangles_to_render[i];
 
-	draw_filled_triangle(300, 100, 50, 400, 500, 700, 0xFF00FF00);
+		// Draw filled triangle
+		if (is_drawing_fill)
+		{
+			draw_filled_triangle(
+				triangle.points[0].x, triangle.points[0].y, 	// vertex A
+				triangle.points[1].x, triangle.points[1].y,		// vertex B
+				triangle.points[2].x, triangle.points[2].y, 	// vertex C
+				0xFFFFFFFF
+			);
+		}
+		 
+		if (is_drawing_wireframe)
+		{
+			// Draw unfilled triangle
+			draw_triangle(
+				triangle.points[0].x, triangle.points[0].y, 	// vertex A
+				triangle.points[1].x, triangle.points[1].y,		// vertex B
+				triangle.points[2].x, triangle.points[2].y, 	// vertex C
+				0xFF00FF00
+			);	
+		}
+
+		if (is_drawing_dots)
+		{
+			draw_rect(triangle.points[0].x, triangle.points[0].y, 2, 2, 0xFFFF0000);
+			draw_rect(triangle.points[1].x, triangle.points[1].y, 2, 2, 0xFFFF0000);
+			draw_rect(triangle.points[2].x, triangle.points[2].y, 2, 2, 0xFFFF0000);
+		}
+
+		
+	}
 
 	// Clear the array of triangles to render every frame loop
 	array_free(triangles_to_render);

@@ -39,10 +39,36 @@ void draw_flat_bottom(int x0, int y0, int x1, int y1, int x2, int y2, uint32_t c
 	}
 }
 
-// Draw flat-top filled triangle
-void draw_flat_top(float x1, float y1, float Mx, float My, float x2, float y2, uint32_t color)
+///////////////////////////////////////////////////////////////////////////////
+// Draw a filled a triangle with a flat top
+///////////////////////////////////////////////////////////////////////////////
+//
+//  (x0,y0)------(x1,y1)
+//      \         /
+//       \       /
+//        \     /
+//         \   /
+//          \ /
+//        (x2,y2)
+//
+///////////////////////////////////////////////////////////////////////////////
+void draw_flat_top(float x0, float y0, float x1, float y1, float x2, float y2, uint32_t color)
 {
+	// Find the two slopes (two trianble legs)
+	float inv_slope1 = (float)(x2 - x0) / (y2 - y0); 	// m' = dX / dY
+	float inv_slope2 = (float)(x2 - x1) / (y2 - y1);	// y = xm + c
+														// x = ym' - c
+	// Start x_start and x_end from the bottom vertex (x2, y2)
+	float x_start 	= x2;
+	float x_end 	= x2;
 
+	// Loop all the scanlines from top to bottom
+	for (int y = y2; y >= y0; y--) 
+	{
+		draw_line(x_start, y, x_end, y, color);
+		x_start -= inv_slope1;
+		x_end 	-= inv_slope2;	
+	}
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -87,15 +113,26 @@ void draw_filled_triangle(int x0, int y0, int x1, int y1, int x2, int y2, uint32
 		int_swap(&x0, &x1);
 	}
 
-	// Calculate the new vertex (Mx, My)
-	int My = y1;
-	int Mx = (((x2-x0) * (y1 - y0)) / (y2 - y0)) + x0;
+	if (y1 == y2)
+	{
+		// We can simply draw the flat-bottom triangle
+		draw_flat_bottom(x0, y0, x1, y1, x2, y2, color);	
+	}
+	else if (y0 == y1) 
+	{
+		// We can simply draw the flat-top triangle
+		draw_flat_top(x0, y0, x1, y1, x2, y2, color);	
+	}
+	else 
+	{
+		// Calculate the new vertex (Mx, My)
+		int My = y1;
+		int Mx = (((x2-x0) * (y1 - y0)) / (y2 - y0)) + x0;
 
-	// TODO: Draw flat-bottom triangle
-	draw_flat_bottom(x0, y0, x1, y1, Mx, My, color);
+		// Draw flat-bottom triangle
+		draw_flat_bottom(x0, y0, x1, y1, Mx, My, color);
 
-	// TODO: Draw flat-bottom triangle
-	//draw_flat_bottom(x1, y1, Mx, My, x2, y2, color);
-
+		// Draw flat-top triangle
+		draw_flat_top(x1, y1, Mx, My, x2, y2, color);
+	}
 }
-
