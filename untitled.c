@@ -1,21 +1,5 @@
-void draw_line(int x0, int y0, int x1, int y1) 
-{
-	int delta_x = (x1 - x0); // run
-	int delta_y = (y1 - y0); // rise
+// Draw flat-bottom filled triangle
+void draw_flat_bottom(float x0, float y0, float x1, float y1, float Mx, float My);
 
-	int side_length = abs(delta_x) >= abs(delta_y) ? abs(delta_x) : abs(delta_y); // We need to pick the largest to do the increment by 1
-
-	// Find how much we should increment in both x and y each step
-	float x_inc = delta_x / (float)side_length; // (depending the greater) 1, -1, or 0 
-	float y_inc = delta_y / (float)side_length; // (depending the greater) not always 1, it depends on the slope
-
-	float current_x = x0;
-	float current_y = y0;
-
-	for (int i = 0; i <= side_length; i++) 
-	{
-		draw_pixel(round(current_x), round(current_y));
-		current_x += x_inc;
-		current_y += y_inc;
-	}
-}
+// Draw flat-top filled triangle
+void draw_flat_bottom(float x1, float y1, float Mx, float My, float x2, float y2);
