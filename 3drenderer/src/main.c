@@ -236,9 +236,9 @@ void render(void)
 			);
 		}
 		 
+		// Draw unfilled triangle
 		if (render_method == RENDER_WIRE || render_method == RENDER_WIRE_VERTEX || render_method == RENDER_FILL_TRIANGLE_WIRE)
 		{
-			// Draw unfilled triangle
 			draw_triangle(
 				triangle.points[0].x, triangle.points[0].y, 	// vertex A
 				triangle.points[1].x, triangle.points[1].y,		// vertex B
