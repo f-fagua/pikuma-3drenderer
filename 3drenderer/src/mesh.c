@@ -66,64 +66,71 @@ void load_cube_mesh_data(void)
 
 void load_obj_file_data(char* filename) 
 {
-	// TODO: 
-	// Read the contents of the .obj file
-	// and load the vertices and faces in
-	// our mesh.vertices and mesh.faces
-	FILE *file;
-	char line[256];
-
+	FILE* file;
 	file = fopen(filename, "r");
-	if (file == NULL) 
+	
+	char line[1024];
+
+	// fgets => File Get String
+	while (fgets(line, 1024, file)) 		 
 	{
-		perror("Error opening file");
+		// Vertex information
+		// strncmp => String Number Compare
+		if(strncmp(line, "v ", 2) == 0) 	
+		{
+			vec3_t vertex = parse_vertex(&line[0]);
+			array_push(mesh.vertices, vertex);
+		}
+		// Face Information
+		if (strncmp(line, "f ", 2) == 0)
+		{
+			face_t face = parse_face(&line[0]);
+			array_push(mesh.faces, face);
+		}
 	}
 
-	while (fgets(line, sizeof(line), file)) {
-        // Process the line here (e.g., print it)
-        if (line[0] == 'v' && line[1] == ' ')
-        {
-        	vec3_t vertex = parse_vertex(&line[0]);
-        	array_push(mesh.vertices, vertex);
-        }
-        else if (line[0] == 'f' && line[1] == ' ')
-        {
-        	face_t face = parse_face(&line[0]);
-			array_push(mesh.faces, face);
-        }
-    }
-
-    // Close the file
-    if (fclose(file) != 0) {
+	if (fclose(file) != 0) 
+	{
         perror("Error closing file");
     }
 }
 
 vec3_t parse_vertex(char* line) 
 {
-	vec3_t vertex_data = {.x = 0, .y = 0, .z = 0};
-	
-	float x = 0, y = 0, z = 0;
-	sscanf(line, "v %f %f %f", &x, &y, &z);
+	vec3_t vertex_data;
 
-	vertex_data.x = x;
-	vertex_data.y = y;
-	vertex_data.z = z;
+	// sscanf => String Scan Format
+	sscanf(
+		line, 
+		"v %f %f %f", 
+		&vertex_data.x, 
+		&vertex_data.y, 
+		&vertex_data.z
+	);
 
 	return vertex_data;
 }
 
 face_t parse_face(char* line) 
 {
-	face_t face = { .a = 0, .b = 0, .c = 0 };
-	
-	int a1, a2, a3, b1, b2, b3, c1, c2, c3;
+	int vertex_indices[3];
+	int texture_indices[3];
+	int normal_indices[3];
 
-	sscanf(line, "f %d/%d/%d %d/%d/%d %d/%d/%d", &a1, &a2, &a3, &b1, &b2, &b3, &c1, &c2, &c3);
+	sscanf(
+		line, 
+		"f %d/%d/%d %d/%d/%d %d/%d/%d", 
+		&vertex_indices[0],	&texture_indices[0], &normal_indices[0],
+		&vertex_indices[1], &texture_indices[1], &normal_indices[1], 
+		&vertex_indices[2], &texture_indices[2], &normal_indices[2]
+	);
 
-	face.a = a1;
-	face.b = b1;
-	face.c = c1;
+	face_t face = 
+	{
+		.a = vertex_indices[0],
+		.b = vertex_indices[1],
+		.c = vertex_indices[2]	
+	};
 
 	return face;
 }	
