@@ -136,3 +136,33 @@ void draw_filled_triangle(int x0, int y0, int x1, int y1, int x2, int y2, uint32
 		draw_flat_top(x1, y1, Mx, My, x2, y2, color);
 	}
 }
+
+void bubble_sort(triangle_t arr[], int n) 
+{
+	int i, j;
+    for (i = 0; i < n; i++) 
+    {
+        for (j = i; j < n; j++) 
+        {
+            if (arr[i].avg_depth < arr[j].avg_depth) {
+                // Swap the elements
+                triangle_t temp = arr[i];
+                arr[i] = arr[j];
+                arr[j] = temp;
+            }
+        }
+    }
+	/*
+	int i, j;
+    for (i = 0; i < n-1; i++) {
+        for (j = 0; j < n-i-1; j++) {
+            if (arr[j].avg_depth > arr[j+1].avg_depth) {
+                // Swap the elements
+                triangle_t temp = arr[j];
+                arr[j] = arr[j+1];
+                arr[j+1] = temp;
+            }
+        }
+    }
+    */
+}
