@@ -4,8 +4,9 @@
 #include <SDL2/SDL.h>
 #include "array.h"
 #include "display.h"
-#include "vector.h"
+#include "matrix.h"
 #include "mesh.h"
+#include "vector.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 // Array of triangles that should be renderer frame by frame
@@ -129,12 +130,18 @@ void update(void)
 	// Initialize the array of triangles to render
 	triangles_to_render = NULL;
 
+	// Change the mesh scale/rotation per animation frame
 	mesh.rotation.x += 0.01;
 	mesh.rotation.y += 0.01;
 	mesh.rotation.z += 0.01;
-	
-	int num_faces = array_length(mesh.faces);
+	mesh.scale.x += 0.002;
+	mesh.scale.y += 0.001;
 
+	// Create a scale matrix that will be used to multiply the mesh vertices
+	mat4_t scale_matrix = mat4_make_scale(mesh.scale.x, mesh.scale.y, mesh.scale.z);
+
+	// Loop all the triangle faces of our mesh
+	int num_faces = array_length(mesh.faces);
 	for (int i = 0; i < num_faces; i++) 
 	{
 		face_t mesh_face = mesh.faces[i];
@@ -144,15 +151,15 @@ void update(void)
 		face_vertices[1] = mesh.vertices[mesh_face.b - 1];
 		face_vertices[2] = mesh.vertices[mesh_face.c - 1];
 
-		vec3_t transformed_vertices[3];
+		vec4_t transformed_vertices[3];
 
 		// Loop all three vertices of this current face and apply transformations
 		for (int j = 0; j < 3; j++)
 		{
-			vec3_t transformed_vertex = face_vertices[j];
+			vec4_t transformed_vertex = vec4_from_vec3(face_vertices[j]);
 			
-			// TODO: Use a matrix to scale our original vertex
-			
+			// Use a matrix to scale our original vertex
+			transformed_vertex = mat4_mul_vec4(scale_matrix, transformed_vertex);
 			
 			// Translate the vertex away from the camera
 			transformed_vertex.z += 5;
@@ -164,9 +171,9 @@ void update(void)
 		// TODO: Check backface culling
 		if (cull_method == CULL_BACKFACE) 
 		{
-			vec3_t vector_a = transformed_vertices[0]; /*   A   */
-			vec3_t vector_b = transformed_vertices[1]; /*  / \  */
-			vec3_t vector_c = transformed_vertices[2]; /* C---B */
+			vec3_t vector_a = vec3_from_vec4(transformed_vertices[0]); /*   A   */
+			vec3_t vector_b = vec3_from_vec4(transformed_vertices[1]); /*  / \  */
+			vec3_t vector_c = vec3_from_vec4(transformed_vertices[2]); /* C---B */
 
 			// Get the vector substraction of B-A and C-A
 			vec3_t vector_ab = vec3_sub(vector_b, vector_a);
@@ -199,7 +206,7 @@ void update(void)
 		for (int j = 0; j < 3; j++)
 		{
 			// Project the current vertex
-			projected_points[j] = project(transformed_vertices[j]);
+			projected_points[j] = project(vec3_from_vec4(transformed_vertices[j]));
 
 			// Scale and translate the projected points to the middle of the screen
 			projected_points[j].x += (window_width/2);
