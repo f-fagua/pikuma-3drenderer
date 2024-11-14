@@ -134,8 +134,8 @@ void update(void)
 	mesh.rotation.x += 0.01;
 	mesh.rotation.y += 0.01;
 	mesh.rotation.z += 0.01;
-	// mesh.scale.x += 0.002;
-	// mesh.scale.y += 0.001;
+	mesh.scale.x += 0.002;
+	mesh.scale.y += 0.001;
 	mesh.translation.x += 0.01;
 	mesh.translation.z = 5.0;
 	
@@ -165,13 +165,17 @@ void update(void)
 		{
 			vec4_t transformed_vertex = vec4_from_vec3(face_vertices[j]);
 			
-			// Use a matrix to scale our original vertex
-			transformed_vertex = mat4_mul_vec4(scale_matrix, transformed_vertex);
-			transformed_vertex = mat4_mul_vec4(rotation_x_matrix, transformed_vertex);
-			transformed_vertex = mat4_mul_vec4(rotation_y_matrix, transformed_vertex);
-			transformed_vertex = mat4_mul_vec4(rotation_z_matrix, transformed_vertex);
-			transformed_vertex = mat4_mul_vec4(translation_matrix, transformed_vertex);
-			
+			// Create a world matrix combining scale, rotation, and translation matrices
+			mat4_t world_matrix = mat4_identity();
+			world_matrix = mat4_mul_mat4(scale_matrix, 			world_matrix); // Matrix on the left TRANSFORM matrix on the right 
+			world_matrix = mat4_mul_mat4(rotation_z_matrix, 	world_matrix); // The same as with vectors
+			world_matrix = mat4_mul_mat4(rotation_y_matrix, 	world_matrix);
+			world_matrix = mat4_mul_mat4(rotation_x_matrix, 	world_matrix);
+			world_matrix = mat4_mul_mat4(translation_matrix,	world_matrix);
+
+			// Multiply the world matrix by the original vector
+			transformed_vertex = mat4_mul_vec4(world_matrix, transformed_vertex);
+
 			// Save transformed vertex in the array of transformed vertices
 			transformed_vertices[j] = transformed_vertex;
 		}
