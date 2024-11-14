@@ -167,6 +167,8 @@ void update(void)
 			
 			// Create a world matrix combining scale, rotation, and translation matrices
 			mat4_t world_matrix = mat4_identity();
+
+			// Order matters: First scale, then rotate, then translate. [T]*[R]*[S]*v
 			world_matrix = mat4_mul_mat4(scale_matrix, 			world_matrix); // Matrix on the left TRANSFORM matrix on the right 
 			world_matrix = mat4_mul_mat4(rotation_z_matrix, 	world_matrix); // The same as with vectors
 			world_matrix = mat4_mul_mat4(rotation_y_matrix, 	world_matrix);
