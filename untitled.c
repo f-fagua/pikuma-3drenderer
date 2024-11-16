@@ -1,22 +1,21 @@
 
 
-
-
-typedef struct {
-    float m[4][4];
-} mat4_t;
-
-
-mat4_t mat4_make_scale (float sx, float sy, float sz)
+typedef struct 
 {
-	// | sx  0  0  0 |
-	// |  0 sy  0  0 |
-	// |  0  0 sz  0 |
-	// |  0  0  0  1 |
+    vec3_t direction;
+} light_t;
 
-	mat4_t m = mat4_identity();
-	m.m[0][0] = sx;
-	m.m[1][1] = sy;
-	m.m[2][2] = sz;
-	return m;
+////////////////////////////////////////////////////////////////////////////////
+// Change color based on a percentage factor to represent light intensity
+////////////////////////////////////////////////////////////////////////////////
+uint32_t light_apply_intensity(uint32_t original_color, float percentage_factor) 
+{
+	uint32_t a = (original_color & 0xFF000000);
+	uint32_t r = (original_color & 0x00FF0000) * percentage_factor;
+	uint32_t g = (original_color & 0x0000FF00) * percentage_factor;
+	uint32_t b = (original_color & 0x000000FF) * percentage_factor;
+
+	uint32_t new_color = a | (r & 0x00FF0000) | (r & 0x0000FF00) | (r & 0x000000FF);
+
+	return new_color;
 }
