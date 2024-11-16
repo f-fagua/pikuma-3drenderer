@@ -5,6 +5,7 @@
 #include <SDL2/SDL.h>
 #include "array.h"
 #include "display.h"
+#include "light.h"
 #include "matrix.h"
 #include "mesh.h"
 #include "vector.h"
@@ -23,6 +24,8 @@ int previous_frame_time = 0;
 vec3_t camera_postition = {.x = 0, .y = 0, .z = 0};
 
 mat4_t proj_matrix;
+
+light_t global_light = { .direction = {.x = 0, .y = -1, .z = 0} };
 
 ////////////////////////////////////////////////////////////////////////////////
 // setup function to initialize variables and game objects
@@ -129,8 +132,8 @@ void update(void)
 
 	// Change the mesh scale/rotation per animation frame
 	mesh.rotation.x += 0.01;
-	// mesh.rotation.y += 0.01;
-	// mesh.rotation.z += 0.01;
+	//mesh.rotation.y += 0.01;
+	//mesh.rotation.z += 0.01;
 	mesh.translation.z = 5.0;
 
 	// Create a scale, rotation, and translation matrices that will be used to multiply the mesh vertices
@@ -206,6 +209,14 @@ void update(void)
 			}
 		}
 
+		// TODO: get the color
+		float color_alpha = get_face_alightment_alpha( 
+			global_light, 
+			transformed_vertices[0], transformed_vertices[1], transformed_vertices[2],
+			mesh_face.color
+		);
+
+		mesh_face.color = light_apply_intensity(mesh_face.color, color_alpha);
 
 		vec4_t projected_points[3];
 
