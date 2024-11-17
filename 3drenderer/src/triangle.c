@@ -1,12 +1,6 @@
 #include "display.h"
+#include "swap.h"
 #include "triangle.h"
-
-void int_swap(int* a, int* b)
-{
-	int tmp = *a;
-	*a = *b;
-	*b = tmp;
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 // Draw a filled a triangle with a flat bottom
@@ -167,9 +161,85 @@ void draw_textured_triangle(
 	uint32_t* texture
 ) 
 {
-	// TODO: 
-	// Loop all the pixels of the triangle to render them based on the color
-	// that comes from the texture
+	// We need to sort the vertices by y-coordinate ascending (y0 < y1 < y2)
+	if (y0 > y1)
+	{
+		int_swap(&y0, &y1);
+		int_swap(&x0, &x1);
+		float_swap(&u0, &u1);
+		float_swap(&v0, &v1);
+	}
+	if (y1 > y2)
+	{
+		int_swap(&y1, &y2);
+		int_swap(&x1, &x2);
+		float_swap(&u1, &u2);
+		float_swap(&v1, &v2);
+	}
+	if (y0 > y1)
+	{
+		int_swap(&y0, &y1);
+		int_swap(&x0, &x1);
+		float_swap(&u0, &u1);
+		float_swap(&v0, &v1);
+	}
+
+	///////////////////////////////////////////////////////
+	// Render the upper part of the triangle (flat bottom)
+	///////////////////////////////////////////////////////
+	float inv_slope1 = 0;
+	float inv_slope2 = 0;
+
+	if (y1 - y0 != 0) inv_slope1 = (float)(x1 - x0) / abs(y1 - y0);
+	if (y2 - y0 != 0) inv_slope2 = (float)(x2 - x0) / abs(y2 - y0);
+
+	if (y1 - y0) 
+	{
+		for (int y = y0; y <= y1; y++)
+		{
+			int x_start = x1 + (y - y1) * inv_slope1;
+			int x_end 	= x0 + (y - y0) * inv_slope2;
+
+			if (x_end < x_start) int_swap(&x_start, &x_end); // if x_start is to the left of x_end 
+
+			for (int x = x_start; x < x_end; x++) 
+			{
+				// TODO:
+				// Draw our pixel with the color that comes from the texture
+				draw_pixel(x, y, 0xFFFF00FF);
+			}
+		}	
+	}
+
+	///////////////////////////////////////////////////////
+	// Render the down part of the triangle (flat top)
+	///////////////////////////////////////////////////////
+	inv_slope1 = 0;
+	inv_slope2 = 0;
+
+	if (y2 - y1 != 0) inv_slope1 = (float)(x2 - x1) / abs(y2 - y1);
+	if (y2 - y0 != 0) inv_slope2 = (float)(x2 - x0) / abs(y2 - y0);
+
+	if (y2 - y1) 
+	{
+		for (int y = y1; y <= y2; y++)
+		{
+			int x_start = x1 + (y - y1) * inv_slope1;
+			int x_end 	= x0 + (y - y0) * inv_slope2;
+
+			if (x_end < x_start) 
+			{
+				int_swap(&x_start, &x_end); // if x_start is to the left of x_end 
+			}
+			
+			for (int x = x_start; x < x_end; x++) 
+			{
+				// TODO:
+				// Draw our pixel with the color that comes from the texture
+				draw_pixel(x, y, 0xFFFF00FF);
+			}
+		}	
+	}
 }
 
 void bubble_sort(triangle_t arr[], int n) 
@@ -187,17 +257,4 @@ void bubble_sort(triangle_t arr[], int n)
             }
         }
     }
-	/*
-	int i, j;
-    for (i = 0; i < n-1; i++) {
-        for (j = 0; j < n-i-1; j++) {
-            if (arr[j].avg_depth > arr[j+1].avg_depth) {
-                // Swap the elements
-                triangle_t temp = arr[j];
-                arr[j] = arr[j+1];
-                arr[j+1] = temp;
-            }
-        }
-    }
-    */
 }
