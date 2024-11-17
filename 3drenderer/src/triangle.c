@@ -206,7 +206,7 @@ void draw_textured_triangle(
 			{
 				// TODO:
 				// Draw our pixel with the color that comes from the texture
-				draw_pixel(x, y, 0xFFFF00FF);
+				draw_pixel(x, y, (x % 2 == 0 && y % 2 == 0) ? 0xFFFF00FF : 0xFF000000);
 			}
 		}	
 	}
@@ -236,7 +236,7 @@ void draw_textured_triangle(
 			{
 				// TODO:
 				// Draw our pixel with the color that comes from the texture
-				draw_pixel(x, y, 0xFFFF00FF);
+				draw_pixel(x, y, (x % 2 == 0 && y % 2 == 0) ? 0xFFFF00FF : 0xFF000000);
 			}
 		}	
 	}
