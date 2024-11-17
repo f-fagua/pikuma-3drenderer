@@ -144,9 +144,9 @@ void update(void)
 	triangles_to_render = NULL;
 
 	// Change the mesh scale/rotation per animation frame
-	mesh.rotation.x += 0.005;
-	mesh.rotation.y += 0.00;
-	mesh.rotation.z += 0.00;
+	mesh.rotation.x += -0.008;
+	mesh.rotation.y += 0.03;
+	mesh.rotation.z += 0.04;
 	mesh.translation.z = 5.0;
 
 	// Create a scale, rotation, and translation matrices that will be used to multiply the mesh vertices
