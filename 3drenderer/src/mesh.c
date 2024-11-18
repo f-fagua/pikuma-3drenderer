@@ -73,6 +73,8 @@ void load_obj_file_data(char* filename)
 	
 	char line[1024];
 
+	tex2_t* texcoords = NULL;
+
 	// fgets => File Get String
 	while (fgets(line, 1024, file)) 		 
 	{
@@ -83,13 +85,21 @@ void load_obj_file_data(char* filename)
 			vec3_t vertex = parse_vertex(&line[0]);
 			array_push(mesh.vertices, vertex);
 		}
+		if(strncmp(line, "vt ", 3) == 0) 	
+		{
+			tex2_t texcoord;
+			sscanf(line, "vt %f %f", &texcoord.u, &texcoord.v);
+			array_push(texcoords, texcoord);
+		}
 		// Face Information
 		if (strncmp(line, "f ", 2) == 0)
 		{
-			face_t face = parse_face(&line[0]);
+			face_t face = parse_face(&line[0], texcoords);
 			array_push(mesh.faces, face);
 		}
 	}
+
+	array_free(texcoords);
 
 	if (fclose(file) != 0) 
 	{
@@ -113,7 +123,7 @@ vec3_t parse_vertex(char* line)
 	return vertex_data;
 }
 
-face_t parse_face(char* line) 
+face_t parse_face(char* line, tex2_t* texcoords) 
 {
 	int vertex_indices[3];
 	int texture_indices[3];
@@ -129,9 +139,12 @@ face_t parse_face(char* line)
 
 	face_t face = 
 	{
-		.a = vertex_indices[0],
-		.b = vertex_indices[1],
-		.c = vertex_indices[2],
+		.a = vertex_indices[0] - 1,
+		.b = vertex_indices[1] - 1,
+		.c = vertex_indices[2] - 1,
+		.a_uv = texcoords[texture_indices[0] - 1],
+		.b_uv = texcoords[texture_indices[1] - 1],
+		.c_uv = texcoords[texture_indices[2] - 1],
 		.color = 0xFFFFFFFF
 	};
 

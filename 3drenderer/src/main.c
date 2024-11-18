@@ -1,8 +1,8 @@
 #include <math.h>
-#include <stdio.h>
-#include <stdint.h>
-#include <stdbool.h>
 #include <SDL2/SDL.h>
+#include <stdbool.h>
+#include <stdint.h>
+#include <stdio.h>
 #include "array.h"
 #include "display.h"
 #include "light.h"
@@ -10,6 +10,7 @@
 #include "mesh.h"
 #include "texture.h"
 #include "triangle.h"
+#include "upng.h"
 #include "vector.h"
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -24,7 +25,6 @@ bool is_running = false;
 int previous_frame_time = 0;
 
 vec3_t camera_postition = {.x = 0, .y = 0, .z = 0};
-
 mat4_t proj_matrix;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -43,7 +43,7 @@ void setup(void)
 	color_buffer_texture = SDL_CreateTexture
 	(
 		renderer,
-		SDL_PIXELFORMAT_ARGB8888,
+		SDL_PIXELFORMAT_RGBA32,
 		SDL_TEXTUREACCESS_STREAMING,
 		window_width,
 		window_height
@@ -56,14 +56,12 @@ void setup(void)
 	float zfar = 100.0;
 	proj_matrix = mat4_make_perspective(fov, aspect, znear, zfar);
 
-	// Manually load the hardcoded texture data from the static array
-	mesh_texture = (uint32_t*)REDBRICK_TEXTURE;
-	texture_width = 64;
-	texture_height = 64;
-
 	// Loads the cube values in the mesh data structure
-	load_cube_mesh_data();
-	//load_obj_file_data("./assets/f22.obj");
+	//load_cube_mesh_data();
+	load_obj_file_data("./assets/cube.obj");
+
+	// Load the texture information from an external PNG file
+	load_png_texture_data("./assets/cube.png");
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -145,7 +143,7 @@ void update(void)
 
 	// Change the mesh scale/rotation per animation frame
 	// mesh.rotation.x += -0.008;
-	// mesh.rotation.y += 0.003;
+	mesh.rotation.y += 0.003;
 	// mesh.rotation.z += 0.04;
 	mesh.translation.z = 5.0;
 
@@ -163,9 +161,9 @@ void update(void)
 		face_t mesh_face = mesh.faces[i];
 
 		vec3_t face_vertices[3];
-		face_vertices[0] = mesh.vertices[mesh_face.a - 1];
-		face_vertices[1] = mesh.vertices[mesh_face.b - 1];
-		face_vertices[2] = mesh.vertices[mesh_face.c - 1];
+		face_vertices[0] = mesh.vertices[mesh_face.a];
+		face_vertices[1] = mesh.vertices[mesh_face.b];
+		face_vertices[2] = mesh.vertices[mesh_face.c];
 
 		vec4_t transformed_vertices[3];
 
@@ -364,6 +362,7 @@ void render(void)
 void free_resources(void) 
 {
 	free(color_buffer);
+	upng_free(png_texture);
 	array_free(mesh.faces);
 	array_free(mesh.vertices);
 }
