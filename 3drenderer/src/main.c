@@ -27,6 +27,13 @@ int previous_frame_time = 0;
 vec3_t camera_postition = {.x = 0, .y = 0, .z = 0};
 mat4_t proj_matrix;
 
+vec3_t mesh_rotation = 
+{
+	.x =  0, //-0.008,
+	.y =  0.003,
+	.z =  0  //0.004
+};
+
 ////////////////////////////////////////////////////////////////////////////////
 // setup function to initialize variables and game objects
 ////////////////////////////////////////////////////////////////////////////////
@@ -58,10 +65,10 @@ void setup(void)
 
 	// Loads the cube values in the mesh data structure
 	//load_cube_mesh_data();
-	load_obj_file_data("./assets/cube.obj");
+	load_obj_file_data("./assets/drone.obj");
 
 	// Load the texture information from an external PNG file
-	load_png_texture_data("./assets/cube.png");
+	load_png_texture_data("./assets/drone.png");
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -142,10 +149,10 @@ void update(void)
 	triangles_to_render = NULL;
 
 	// Change the mesh scale/rotation per animation frame
-	// mesh.rotation.x += -0.008;
-	mesh.rotation.y += 0.003;
-	// mesh.rotation.z += 0.04;
-	mesh.translation.z = 5.0;
+	mesh.rotation.x += mesh_rotation.x;
+	mesh.rotation.y += mesh_rotation.y;
+	mesh.rotation.z += mesh_rotation.z;
+	mesh.translation.z = 	 5.000;
 
 	// Create a scale, rotation, and translation matrices that will be used to multiply the mesh vertices
 	mat4_t scale_matrix = mat4_make_scale(mesh.scale.x, mesh.scale.y, mesh.scale.z);
