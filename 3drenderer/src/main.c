@@ -16,7 +16,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 // Array of triangles that should be renderer frame by frame
 ////////////////////////////////////////////////////////////////////////////////
-triangle_t* triangles_to_render = NULL;
+#define MAX_TRIANGLES_PER_MESH 10000
+triangle_t triangles_to_render[MAX_TRIANGLES_PER_MESH];
+int num_triangles_to_render = 0;
 
 ////////////////////////////////////////////////////////////////////////////////
 // Global variables for execution status and game loop
@@ -29,8 +31,8 @@ mat4_t proj_matrix;
 
 vec3_t mesh_rotation = 
 {
-	.x =   0.008,
-	.y =   0, // 0.003,
+	.x =   0, //0.008,
+	.y =   0.003,
 	.z =   0  //0.004
 };
 
@@ -66,10 +68,10 @@ void setup(void)
 
 	// Loads the cube values in the mesh data structure
 	//load_cube_mesh_data();
-	load_obj_file_data("./assets/efa.obj");
+	load_obj_file_data("./assets/drone.obj");
 
 	// Load the texture information from an external PNG file
-	load_png_texture_data("./assets/efa.png");
+	load_png_texture_data("./assets/drone.png");
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -146,14 +148,14 @@ void update(void)
 	
 	previous_frame_time = SDL_GetTicks();
 
-	// Initialize the array of triangles to render
-	triangles_to_render = NULL;
+	// Initialize the array of triangles to render for the current frame
+	num_triangles_to_render = 0;
 
 	// Change the mesh scale/rotation per animation frame
 	mesh.rotation.x += mesh_rotation.x;
 	mesh.rotation.y += mesh_rotation.y;
 	mesh.rotation.z += mesh_rotation.z;
-	mesh.translation.z = 	 5.000;
+	mesh.translation.z = 	 7.000;
 
 	// Create a scale, rotation, and translation matrices that will be used to multiply the mesh vertices
 	mat4_t scale_matrix = mat4_make_scale(mesh.scale.x, mesh.scale.y, mesh.scale.z);
@@ -272,12 +274,12 @@ void update(void)
 		};
 
 		// Save the projected triangle in the array of triangles to render
-		array_push(triangles_to_render, projected_triangle);
+		if (num_triangles_to_render < MAX_TRIANGLES_PER_MESH)
+		{
+			triangles_to_render[num_triangles_to_render] = projected_triangle;
+			num_triangles_to_render++;
+		}	
 	}
-
-	///////////////////////////////////////////////////////////////////
-	//... No more bubble-sort and no more painter's algorithm. Yay! :)
-	///////////////////////////////////////////////////////////////////
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -288,8 +290,7 @@ void render(void)
 	draw_grid(10, 0xFF333333);
 
 	// Loop all projected triangles and render them
-	int num_triangles = array_length(triangles_to_render);
-	for (int i = 0; i < num_triangles; i++) 
+	for (int i = 0; i < num_triangles_to_render; i++) 
 	{
 		triangle_t triangle = triangles_to_render[i];
 
@@ -334,13 +335,9 @@ void render(void)
 		}
 	}
 
-	// Clear the array of triangles to render every frame loop
-	array_free(triangles_to_render);
-
 	render_color_buffer();
 	
 	clear_color_buffer(0xFF000000);
-
 	clear_z_buffer();
 
 	SDL_RenderPresent(renderer);
