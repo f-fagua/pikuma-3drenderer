@@ -29,9 +29,9 @@ mat4_t proj_matrix;
 
 vec3_t mesh_rotation = 
 {
-	.x =  0, //-0.008,
-	.y =  0.003,
-	.z =  0  //0.004
+	.x =  -0.008,
+	.y =   0, // 0.003,
+	.z =   0  //0.004
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -45,7 +45,8 @@ void setup(void)
 
 	// Allocate the required bytes in memory for the color buffer
 	color_buffer = (uint32_t*) malloc(sizeof(uint32_t) * window_width * window_height);
-	
+	z_buffer = (float*) malloc(sizeof(float) * window_width * window_height);
+
 	// Creating a SDL texture that is used to display the color buffer
 	color_buffer_texture = SDL_CreateTexture
 	(
@@ -65,10 +66,10 @@ void setup(void)
 
 	// Loads the cube values in the mesh data structure
 	//load_cube_mesh_data();
-	load_obj_file_data("./assets/drone.obj");
+	load_obj_file_data("./assets/f117.obj");
 
 	// Load the texture information from an external PNG file
-	load_png_texture_data("./assets/drone.png");
+	load_png_texture_data("./assets/f117.png");
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -359,6 +360,8 @@ void render(void)
 	
 	clear_color_buffer(0xFF000000);
 
+	clear_z_buffer();
+
 	SDL_RenderPresent(renderer);
 }
 
@@ -369,6 +372,7 @@ void render(void)
 void free_resources(void) 
 {
 	free(color_buffer);
+	free(z_buffer);
 	upng_free(png_texture);
 	array_free(mesh.faces);
 	array_free(mesh.vertices);
