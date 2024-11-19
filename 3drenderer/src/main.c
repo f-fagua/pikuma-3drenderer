@@ -278,23 +278,6 @@ void update(void)
 		// Save the projected triangle in the array of triangles to render
 		array_push(triangles_to_render, projected_triangle);
 	}
-
-	// Sort the triangles to render by their avg_depth
-	// Sort the triangles to render by their avg_depth
-    int num_triangles = array_length(triangles_to_render);
-    for (int i = 0; i < num_triangles; i++) 
-    {
-        for (int j = i; j < num_triangles; j++) 
-        {
-            if (triangles_to_render[i].avg_depth < triangles_to_render[j].avg_depth) 
-            {
-                // Swap the triangles positions in the array
-                triangle_t temp = triangles_to_render[i];
-                triangles_to_render[i] = triangles_to_render[j];
-                triangles_to_render[j] = temp;
-            }
-        }
-    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -314,9 +297,9 @@ void render(void)
 		if (render_method == RENDER_FILL_TRIANGLE || render_method == RENDER_FILL_TRIANGLE_WIRE)
 		{
 			draw_filled_triangle(
-				triangle.points[0].x, triangle.points[0].y, 	// vertex A
-				triangle.points[1].x, triangle.points[1].y,		// vertex B
-				triangle.points[2].x, triangle.points[2].y, 	// vertex C
+				triangle.points[0].x, triangle.points[0].y, triangle.points[0].z, triangle.points[0].w,	// vertex A
+				triangle.points[1].x, triangle.points[1].y, triangle.points[1].z, triangle.points[1].w,	// vertex B
+				triangle.points[2].x, triangle.points[2].y, triangle.points[2].z, triangle.points[2].w,	// vertex C
 				triangle.color
 			);
 		}
@@ -342,8 +325,6 @@ void render(void)
 				0xFFFFFFFF
 			);	
 		}
-
-		
 
 		if (render_method == RENDER_WIRE_VERTEX)
 		{
