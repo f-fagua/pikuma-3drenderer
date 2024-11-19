@@ -29,7 +29,7 @@ mat4_t proj_matrix;
 
 vec3_t mesh_rotation = 
 {
-	.x =  -0.008,
+	.x =   0.008,
 	.y =   0, // 0.003,
 	.z =   0  //0.004
 };
@@ -66,10 +66,10 @@ void setup(void)
 
 	// Loads the cube values in the mesh data structure
 	//load_cube_mesh_data();
-	load_obj_file_data("./assets/f117.obj");
+	load_obj_file_data("./assets/efa.obj");
 
 	// Load the texture information from an external PNG file
-	load_png_texture_data("./assets/f117.png");
+	load_png_texture_data("./assets/efa.png");
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -248,9 +248,6 @@ void update(void)
 			projected_points[j].y += (window_height/2.0);
 		}
 
-		// Calculate the average depth for each fave based on the vertices after transformation
-		float avg_depth = (transformed_vertices[0].z + transformed_vertices[1].z + transformed_vertices[2].z) / 3.0; 
-
 		// Calculate the shade intensity based on how aligned is the face normal and the inverse of the light ray
 		float light_intensity_factor = -vec3_dot(normal, light.direction);
 
@@ -271,13 +268,16 @@ void update(void)
 				{ mesh_face.b_uv.u, mesh_face.b_uv.v },
 				{ mesh_face.c_uv.u, mesh_face.c_uv.v }
 			},
-			.color = triangle_color,
-			.avg_depth = avg_depth
+			.color = triangle_color
 		};
 
 		// Save the projected triangle in the array of triangles to render
 		array_push(triangles_to_render, projected_triangle);
 	}
+
+	///////////////////////////////////////////////////////////////////
+	//... No more bubble-sort and no more painter's algorithm. Yay! :)
+	///////////////////////////////////////////////////////////////////
 }
 
 ////////////////////////////////////////////////////////////////////////////////

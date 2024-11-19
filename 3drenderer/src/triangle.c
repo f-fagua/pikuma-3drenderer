@@ -76,15 +76,15 @@ void draw_filled_triangle(
 			int x_start = x1 + (y - y1) * inv_slope1;
 			int x_end 	= x0 + (y - y0) * inv_slope2;
 
-			if (x_end < x_start) int_swap(&x_start, &x_end); // if x_start is to the left of x_end 
+			if (x_end < x_start) 
+			{
+				int_swap(&x_start, &x_end); // if x_start is to the left of x_end 
+			}
 
 			for (int x = x_start; x < x_end; x++) 
 			{
-				// Draw our pixel with the color that comes from the texture
-				draw_pixel_2(
-					x, y, color,
-					point_a, point_b, point_c
-				);
+				// Draw our pixel with solid color
+				draw_triangle_pixel(x, y, color, point_a, point_b, point_c);
 			}
 		}	
 	}
@@ -112,17 +112,14 @@ void draw_filled_triangle(
 			
 			for (int x = x_start; x < x_end; x++) 
 			{
-				// Draw our pixel with the color that comes from the texture
-				draw_pixel_2(
-					x, y, color,
-					point_a, point_b, point_c
-				);
+				// Draw our pixel with solid color
+				draw_triangle_pixel(x, y, color, point_a, point_b, point_c);
 			}
 		}	
 	}
 }
 
-void draw_pixel_2(
+void draw_triangle_pixel(
 	int x, int y, uint32_t color,
 	vec4_t point_a, vec4_t point_b, vec4_t point_c
 	) 
@@ -138,13 +135,11 @@ void draw_pixel_2(
 	float beta 	= weights.y;
 	float gamma = weights.z;
 
-	float interpolated_reciprocal_w;	
-
-	// Also interpolate the value of 1/w for the current pixel
-	interpolated_reciprocal_w = (1 / point_a.w) * alpha + (1 / point_b.w) * beta + (1 / point_c.w) * gamma;
+	// Interpolate the value of 1/w for the current pixel
+	float interpolated_reciprocal_w = (1 / point_a.w) * alpha + (1 / point_b.w) * beta + (1 / point_c.w) * gamma;
 	
 	// Adjust 1/w so the pixels that are closer to the camera have smaller values
-	interpolated_reciprocal_w = 1 - interpolated_reciprocal_w;
+	interpolated_reciprocal_w = 1.0 - interpolated_reciprocal_w;
 
 	// Only draw the pixel if the depth value is less than the one previously stored in the z-buffer
 	if (interpolated_reciprocal_w < z_buffer[(window_width * y) + x])
@@ -377,21 +372,4 @@ void draw_textured_triangle(
 			}
 		}	
 	}
-}
-
-void bubble_sort(triangle_t arr[], int n) 
-{
-	int i, j;
-    for (i = 0; i < n; i++) 
-    {
-        for (j = i; j < n; j++) 
-        {
-            if (arr[i].avg_depth < arr[j].avg_depth) {
-                // Swap the elements
-                triangle_t temp = arr[i];
-                arr[i] = arr[j];
-                arr[j] = temp;
-            }
-        }
-    }
 }
