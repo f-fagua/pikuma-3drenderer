@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include "array.h"
+#include "camera.h"
 #include "display.h"
 #include "light.h"
 #include "matrix.h"
@@ -14,6 +15,12 @@
 #include "vector.h"
 
 ////////////////////////////////////////////////////////////////////////////////
+// Global variables for execution status and game loop
+////////////////////////////////////////////////////////////////////////////////
+bool is_running = false;
+int previous_frame_time = 0;
+
+////////////////////////////////////////////////////////////////////////////////
 // Array of triangles that should be renderer frame by frame
 ////////////////////////////////////////////////////////////////////////////////
 #define MAX_TRIANGLES_PER_MESH 10000
@@ -21,28 +28,26 @@ triangle_t triangles_to_render[MAX_TRIANGLES_PER_MESH];
 int num_triangles_to_render = 0;
 
 ////////////////////////////////////////////////////////////////////////////////
-// Global variables for execution status and game loop
+// Declaration of global transformation matrices
 ////////////////////////////////////////////////////////////////////////////////
-bool is_running = false;
-int previous_frame_time = 0;
-
-vec3_t camera_postition = {.x = 0, .y = 0, .z = 0};
+mat4_t world_matrix;
 mat4_t proj_matrix;
+mat4_t view_matrix;
 
 vec3_t mesh_rotation = 
 {
-	.x =   0, //0.008,
-	.y =   0.003,
+	.x =   0.006,
+	.y =   0, //0.003,
 	.z =   0  //0.004
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-// setup function to initialize variables and game objects
+// Setup function to initialize variables and game objects
 ////////////////////////////////////////////////////////////////////////////////
 void setup(void) 
 {
 	// Initialize render mode and triangle culling method
-	render_method = RENDER_WIRE;
+	render_method = RENDER_TEXTURED;
 	cull_method = CULL_BACKFACE;
 
 	// Allocate the required bytes in memory for the color buffer
@@ -68,10 +73,10 @@ void setup(void)
 
 	// Loads the cube values in the mesh data structure
 	//load_cube_mesh_data();
-	load_obj_file_data("./assets/drone.obj");
+	load_obj_file_data("./assets/efa.obj");
 
 	// Load the texture information from an external PNG file
-	load_png_texture_data("./assets/drone.png");
+	load_png_texture_data("./assets/efa.png");
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -152,10 +157,19 @@ void update(void)
 	num_triangles_to_render = 0;
 
 	// Change the mesh scale/rotation per animation frame
-	mesh.rotation.x += mesh_rotation.x;
-	mesh.rotation.y += mesh_rotation.y;
-	mesh.rotation.z += mesh_rotation.z;
-	mesh.translation.z = 	 7.000;
+	//mesh.rotation.x += mesh_rotation.x;
+	//mesh.rotation.y += mesh_rotation.y;
+	//mesh.rotation.z += mesh_rotation.z;
+	mesh.translation.z = 4.000;
+
+	// Change the camera postion by animation frame
+	camera.position.x += 0.008;
+	camera.position.y += 0.008;
+
+	// Create the view matrix loking at a hardcoded target point
+	vec3_t target = { 0, 0 , 4.0 };
+	vec3_t up_direction = { 0, 1, 0};
+	view_matrix = mat4_look_at(camera.position, target, up_direction);
 
 	// Create a scale, rotation, and translation matrices that will be used to multiply the mesh vertices
 	mat4_t scale_matrix = mat4_make_scale(mesh.scale.x, mesh.scale.y, mesh.scale.z);
@@ -183,7 +197,7 @@ void update(void)
 			vec4_t transformed_vertex = vec4_from_vec3(face_vertices[j]);
 			
 			// Create a world matrix combining scale, rotation, and translation matrices
-			mat4_t world_matrix = mat4_identity();
+			world_matrix = mat4_identity();
 
 			// Order matters: First scale, then rotate, then translate. [T]*[R]*[S]*v
 			world_matrix = mat4_mul_mat4(scale_matrix, 			world_matrix); // Matrix on the left TRANSFORM matrix on the right 
@@ -195,11 +209,14 @@ void update(void)
 			// Multiply the world matrix by the original vector
 			transformed_vertex = mat4_mul_vec4(world_matrix, transformed_vertex);
 
+			// Multiply the view matrix by the vector to transform the scene to camera space
+			transformed_vertex = mat4_mul_vec4(view_matrix, transformed_vertex);
+
 			// Save transformed vertex in the array of transformed vertices
 			transformed_vertices[j] = transformed_vertex;
 		}
 
-		// TODO: Check backface culling	
+		// Get individual vectors from A, B, and C vertices to compute normal
 		vec3_t vector_a = vec3_from_vec4(transformed_vertices[0]); /*   A   */
 		vec3_t vector_b = vec3_from_vec4(transformed_vertices[1]); /*  / \  */
 		vec3_t vector_c = vec3_from_vec4(transformed_vertices[2]); /* C---B */
@@ -212,12 +229,11 @@ void update(void)
 		
 		// Compute the face normal (using cross product to find perpendicular)
 		vec3_t normal = vec3_cross(vector_ab, vector_ac);
-
-		// Normalize the face normal vector
 		vec3_normalize(&normal);
 
-		// Find the vector between a point in the triangle and the camera origin 
-		vec3_t camera_ray = vec3_sub(camera_postition, vector_a);
+		// Find the vector between vertex A in the triangle and the camera origin 
+		vec3_t origin = { 0, 0, 0 };
+		vec3_t camera_ray = vec3_sub(origin, vector_a);
 
 		// Calculate how aligned the camera ray is with the face normal (using dot product)
 		float dot_normal_camera = vec3_dot(normal, camera_ray);
