@@ -1,32 +1,22 @@
-void initialize_frustrum_planes(float fov, float z_near, float z_far) 
+#define MAX_NUM_VERTICES 10
+typedef	struct 
 {
-	frustrum_planes[LEFT_FRUSTUM_PLANE].point = {0, 0, 0};
-	frustrum_planes[LEFT_FRUSTUM_PLANE].normal.x = cos(fov/2);
-	frustrum_planes[LEFT_FRUSTUM_PLANE].normal.y = 0;
-	frustrum_planes[LEFT_FRUSTUM_PLANE].normal.z = sin(fov/2);
+	vec3_t vertices[MAX_NUM_VERTICES];
+	int num_vertices;
+} polygon_t;
 
-	frustrum_planes[RIGHT_FRUSTUM_PLANE].point = {0, 0, 0};
-	frustrum_planes[RIGHT_FRUSTUM_PLANE].normal.x = -cos(fov/2);
-	frustrum_planes[RIGHT_FRUSTUM_PLANE].normal.y = 0;
-	frustrum_planes[RIGHT_FRUSTUM_PLANE].normal.z = sin(fov/2);
-
-	frustrum_planes[TOP_FRUSTUM_PLANE].point = {0, 0, 0};
-	frustrum_planes[TOP_FRUSTUM_PLANE].normal.x = 0;
-	frustrum_planes[TOP_FRUSTUM_PLANE].normal.y = -cos(fov/2);
-	frustrum_planes[TOP_FRUSTUM_PLANE].normal.z = sin(fov/2);
-
-	frustrum_planes[BOTTOM_FRUSTUM_PLANE].point = {0, 0, 0};
-	frustrum_planes[BOTTOM_FRUSTUM_PLANE].normal.x = 0;
-	frustrum_planes[BOTTOM_FRUSTUM_PLANE].normal.y = cos(fov/2);
-	frustrum_planes[BOTTOM_FRUSTUM_PLANE].normal.z = sin(fov/2);
-
-	frustrum_planes[NEAR_FRUSTUM_PLANE].point = {0, 0, z_near};
-	frustrum_planes[NEAR_FRUSTUM_PLANE].normal.x = 0;
-	frustrum_planes[NEAR_FRUSTUM_PLANE].normal.y = 0;
-	frustrum_planes[NEAR_FRUSTUM_PLANE].normal.z = 1;
-
-	frustrum_planes[FAR_FRUSTUM_PLANE].point = {0, 0, z_far};
-	frustrum_planes[FAR_FRUSTUM_PLANE].normal.x = 0;
-	frustrum_planes[FAR_FRUSTUM_PLANE].normal.y = 0;
-	frustrum_planes[FAR_FRUSTUM_PLANE].normal.z = -1;
+void clip_polygon(polygon_t* polygon) 
+{
+	clip_polygon_against_plane(polygon, LEFT_FRUSTUM_PLANE);
+	clip_polygon_against_plane(polygon, RIGHT_FRUSTUM_PLANE);
+	clip_polygon_against_plane(polygon, TOP_FRUSTUM_PLANE);
+	clip_polygon_against_plane(polygon, BOTTOM_FRUSTUM_PLANE);
+	clip_polygon_against_plane(polygon, NEAR_FRUSTUM_PLANE);
+	clip_polygon_against_plane(polygon, FAR_FRUSTUM_PLANE);
 }
+
+// Create a polygon from the original triangle
+polygon_t polygon = create_polygon(triangle_vertices);
+
+// Clip the polygon, returning a clipped polygon back
+clip_polygon(&polygon);

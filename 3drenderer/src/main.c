@@ -42,7 +42,7 @@ mat4_t view_matrix;
 void setup(void) 
 {
 	// Initialize render mode and triangle culling method
-	render_method = RENDER_TEXTURED;
+	render_method = RENDER_WIRE;
 	cull_method = CULL_BACKFACE;
 
 	// Allocate the required bytes in memory for the color buffer
@@ -71,10 +71,10 @@ void setup(void)
 
 	// Loads the cube values in the mesh data structure
 	//load_cube_mesh_data();
-	load_obj_file_data("./assets/efa.obj");
+	load_obj_file_data("./assets/cube.obj");
 
 	// Load the texture information from an external PNG file
-	load_png_texture_data("./assets/efa.png");
+	load_png_texture_data("./assets/cube.png");
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -213,6 +213,8 @@ void update(void)
 	int num_faces = array_length(mesh.faces);
 	for (int i = 0; i < num_faces; i++) 
 	{
+		if (i != 4) continue;
+
 		face_t mesh_face = mesh.faces[i];
 
 		vec3_t face_vertices[3];
@@ -277,6 +279,19 @@ void update(void)
 			}
 		}
 
+		// Create a polygom from the original transfrom 
+		polygon_t polygon = create_polygon_from_triangle
+		(
+			vec3_from_vec4(transformed_vertices[0]),
+			vec3_from_vec4(transformed_vertices[1]),
+			vec3_from_vec4(transformed_vertices[2])
+		);
+
+		// Clip the polygon and returns a new polygon with potential new vertices
+		clip_polygon(&polygon);
+
+		// TODO: After clipping, we need to break the polygon into triangles
+		
 		vec4_t projected_points[3];
 
 		// Loop all three vertices to perform projection
