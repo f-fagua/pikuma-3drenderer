@@ -19,6 +19,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 bool is_running = false;
 int previous_frame_time = 0;
+float delta_time = 0;
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // Array of triangles that should be renderer frame by frame
@@ -34,20 +36,13 @@ mat4_t world_matrix;
 mat4_t proj_matrix;
 mat4_t view_matrix;
 
-vec3_t mesh_rotation = 
-{
-	.x =   0.006,
-	.y =   0, //0.003,
-	.z =   0  //0.004
-};
-
 ////////////////////////////////////////////////////////////////////////////////
 // Setup function to initialize variables and game objects
 ////////////////////////////////////////////////////////////////////////////////
 void setup(void) 
 {
 	// Initialize render mode and triangle culling method
-	render_method = RENDER_TEXTURED;
+	render_method = RENDER_WIRE_VERTEX;
 	cull_method = CULL_BACKFACE;
 
 	// Allocate the required bytes in memory for the color buffer
@@ -73,10 +68,10 @@ void setup(void)
 
 	// Loads the cube values in the mesh data structure
 	//load_cube_mesh_data();
-	load_obj_file_data("./assets/efa.obj");
+	load_obj_file_data("./assets/cube.obj");
 
 	// Load the texture information from an external PNG file
-	load_png_texture_data("./assets/efa.png");
+	load_png_texture_data("./assets/cube.png");
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -150,6 +145,9 @@ void update(void)
 	{
 		SDL_Delay(time_to_wait);
 	}
+
+	// Get a delta time factor converte to seconds to be used to update our game objects
+	delta_time = (SDL_GetTicks() - previous_frame_time) / 1000.0;
 	
 	previous_frame_time = SDL_GetTicks();
 
@@ -157,14 +155,14 @@ void update(void)
 	num_triangles_to_render = 0;
 
 	// Change the mesh scale/rotation per animation frame
-	//mesh.rotation.x += mesh_rotation.x;
-	//mesh.rotation.y += mesh_rotation.y;
-	//mesh.rotation.z += mesh_rotation.z;
-	mesh.translation.z = 4.000;
+	mesh.rotation.x += 0.6 * delta_time;
+	mesh.rotation.y += 0.6 * delta_time;
+	mesh.rotation.z += 0.6 * delta_time ;
+	mesh.translation.z = 5.0;
 
 	// Change the camera postion by animation frame
-	camera.position.x += 0.008;
-	camera.position.y += 0.008;
+	camera.position.x += 0.0 * delta_time;
+	camera.position.y += 0.0 * delta_time;
 
 	// Create the view matrix loking at a hardcoded target point
 	vec3_t target = { 0, 0 , 4.0 };
@@ -345,9 +343,9 @@ void render(void)
 
 		if (render_method == RENDER_WIRE_VERTEX)
 		{
-			draw_rect(triangle.points[0].x - 3, triangle.points[0].y - 3, 6, 6, 0xFFFF0000);
-			draw_rect(triangle.points[1].x - 3, triangle.points[1].y - 3, 6, 6, 0xFFFF0000);
-			draw_rect(triangle.points[2].x - 3, triangle.points[2].y - 3, 6, 6, 0xFFFF0000);
+			draw_rect(triangle.points[0].x - 3, triangle.points[0].y - 3, 6, 6, 0xFF0000FF);
+			draw_rect(triangle.points[1].x - 3, triangle.points[1].y - 3, 6, 6, 0xFF0000FF);
+			draw_rect(triangle.points[2].x - 3, triangle.points[2].y - 3, 6, 6, 0xFF0000FF);
 		}
 	}
 
