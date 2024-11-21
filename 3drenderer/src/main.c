@@ -21,7 +21,6 @@ bool is_running = false;
 int previous_frame_time = 0;
 float delta_time = 0;
 
-
 ////////////////////////////////////////////////////////////////////////////////
 // Array of triangles that should be renderer frame by frame
 ////////////////////////////////////////////////////////////////////////////////
@@ -42,7 +41,7 @@ mat4_t view_matrix;
 void setup(void) 
 {
 	// Initialize render mode and triangle culling method
-	render_method = RENDER_WIRE_VERTEX;
+	render_method = RENDER_TEXTURED;
 	cull_method = CULL_BACKFACE;
 
 	// Allocate the required bytes in memory for the color buffer
@@ -68,10 +67,10 @@ void setup(void)
 
 	// Loads the cube values in the mesh data structure
 	//load_cube_mesh_data();
-	load_obj_file_data("./assets/cube.obj");
+	load_obj_file_data("./assets/efa.obj");
 
 	// Load the texture information from an external PNG file
-	load_png_texture_data("./assets/cube.png");
+	load_png_texture_data("./assets/efa.png");
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -123,10 +122,37 @@ void process_input(void)
 			{
 				cull_method = CULL_BACKFACE;
 			}
-			if (event.key.keysym.sym == SDLK_d)
+			if (event.key.keysym.sym == SDLK_x)
 			{
 				cull_method = CULL_NONE;
 			}
+			if (event.key.keysym.sym == SDLK_UP)
+			{
+				camera.position.y += 3 * delta_time;
+			}
+			if (event.key.keysym.sym == SDLK_DOWN)
+			{
+				camera.position.y += -3 * delta_time;
+			}
+			if (event.key.keysym.sym == SDLK_w)
+			{
+				camera.forward_velocity = vec3_mul(camera.direction, 5.0 * delta_time);
+				camera.position = vec3_add(camera.position, camera.forward_velocity); 
+			}
+			if (event.key.keysym.sym == SDLK_a)
+			{
+				camera.yaw += 1.0 * delta_time;
+			}
+			if (event.key.keysym.sym == SDLK_s)
+			{
+				camera.forward_velocity = vec3_mul(camera.direction, -5.0 * delta_time);
+				camera.position = vec3_add(camera.position, camera.forward_velocity); 
+			}
+			if (event.key.keysym.sym == SDLK_d)
+			{
+				camera.yaw -= 1.0 * delta_time;
+			}
+			
 			break;
 		}
 	}
@@ -155,18 +181,21 @@ void update(void)
 	num_triangles_to_render = 0;
 
 	// Change the mesh scale/rotation per animation frame
-	mesh.rotation.x += 0.6 * delta_time;
-	mesh.rotation.y += 0.6 * delta_time;
-	mesh.rotation.z += 0.6 * delta_time ;
+	mesh.rotation.x += 0.0 * delta_time;
+	mesh.rotation.y += 0.0 * delta_time;
+	mesh.rotation.z += 0.0 * delta_time ;
 	mesh.translation.z = 5.0;
 
-	// Change the camera postion by animation frame
-	camera.position.x += 0.0 * delta_time;
-	camera.position.y += 0.0 * delta_time;
+	// Initialize the target
+	vec3_t target = { 0, 0, 1 };
+	mat4_t camera_yaw_rotation = mat4_make_rotation_y(camera.yaw);
+	camera.direction = vec3_from_vec4(mat4_mul_vec4(camera_yaw_rotation, vec4_from_vec3(target)));
 
-	// Create the view matrix loking at a hardcoded target point
-	vec3_t target = { 0, 0 , 4.0 };
-	vec3_t up_direction = { 0, 1, 0};
+	// Offset the camera position in the direction where the camera is pointing at
+	target = vec3_add(camera.position, camera.direction);
+	vec3_t up_direction = { 0, 1, 0 };
+
+	// Create the view matrix
 	view_matrix = mat4_look_at(camera.position, target, up_direction);
 
 	// Create a scale, rotation, and translation matrices that will be used to multiply the mesh vertices
