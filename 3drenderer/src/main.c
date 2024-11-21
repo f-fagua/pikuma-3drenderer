@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include "array.h"
 #include "camera.h"
+#include "clipping.h"
 #include "display.h"
 #include "light.h"
 #include "matrix.h"
@@ -61,9 +62,12 @@ void setup(void)
 	// Initialize the perspective projection matrix
 	float fov = M_PI / 3.0; // In radians, it is the same as 180 / 3
 	float aspect = (float)window_height / (float)window_width;
-	float znear = 0.1;
-	float zfar = 100.0;
-	proj_matrix = mat4_make_perspective(fov, aspect, znear, zfar);
+	float z_near = 0.1;
+	float z_far = 100.0;
+	proj_matrix = mat4_make_perspective(fov, aspect, z_near, z_far);
+
+	// Initialize frustrum planes with a point and a normal
+	init_frustrum_planes(fov, z_near, z_far);
 
 	// Loads the cube values in the mesh data structure
 	//load_cube_mesh_data();
