@@ -64,8 +64,8 @@ void setup(void)
 	float aspectx = (float)window_width / (float)window_height;
 	float fovy = M_PI / 3.0; // In radians, it is the same as 180 / 3
 	float fovx = atan(tan(fovy/2) * aspectx) * 2.0;
-	float z_near = 0.1;
-	float z_far = 100.0;
+	float z_near = 1.0;
+	float z_far = 20.0;
 	proj_matrix = mat4_make_perspective(fovy, aspecty, z_near, z_far);
 
 	// Initialize frustrum planes with a point and a normal
@@ -73,10 +73,10 @@ void setup(void)
 
 	// Loads the cube values in the mesh data structure
 	//load_cube_mesh_data();
-	load_obj_file_data("./assets/cube.obj");
+	load_obj_file_data("./assets/f117.obj");
 
 	// Load the texture information from an external PNG file
-	load_png_texture_data("./assets/cube.png");
+	load_png_texture_data("./assets/f117.png");
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -284,7 +284,10 @@ void update(void)
 		(
 			vec3_from_vec4(transformed_vertices[0]),
 			vec3_from_vec4(transformed_vertices[1]),
-			vec3_from_vec4(transformed_vertices[2])
+			vec3_from_vec4(transformed_vertices[2]),
+			mesh_face.a_uv,
+			mesh_face.b_uv,
+			mesh_face.c_uv
 		);
 
 		// Clip the polygon and returns a new polygon with potential new vertices
@@ -308,12 +311,20 @@ void update(void)
 				// Project the current vertex
 				projected_points[j] = mat4_mul_vec4_project(proj_matrix, triangle_after_clipping.points[j]);
 
-				// Scale into the view
-				projected_points[j].x *= (window_width/2.0);
-				projected_points[j].y *= (window_height/2.0);
+				// Perform perspective divide
+                if (projected_points[j].w != 0) 
+                {
+                    projected_points[j].x /= projected_points[j].w;
+                    projected_points[j].y /= projected_points[j].w;
+                    projected_points[j].z /= projected_points[j].w;
+                }
 
 				// Invert the y values to account for flipped screen y coordenate
 				projected_points[j].y *= -1;
+
+				// Scale into the view
+				projected_points[j].x *= (window_width/2.0);
+				projected_points[j].y *= (window_height/2.0);
 
 				// Translating the projected points to the middle of the screen
 				projected_points[j].x += (window_width/2.0);
@@ -330,15 +341,15 @@ void update(void)
 			{
 				.points = 
 				{
-					{ projected_points[0].x, projected_points[0].y, projected_points[0].z, projected_points[0].w},
-					{ projected_points[1].x, projected_points[1].y, projected_points[1].z, projected_points[1].w},
-					{ projected_points[2].x, projected_points[2].y, projected_points[2].z, projected_points[2].w}
+					{ projected_points[0].x, projected_points[0].y, projected_points[0].z, projected_points[0].w },
+					{ projected_points[1].x, projected_points[1].y, projected_points[1].z, projected_points[1].w },
+					{ projected_points[2].x, projected_points[2].y, projected_points[2].z, projected_points[2].w }
 				},
 				.texcoords = 
 				{
-					{ mesh_face.a_uv.u, mesh_face.a_uv.v },
-					{ mesh_face.b_uv.u, mesh_face.b_uv.v },
-					{ mesh_face.c_uv.u, mesh_face.c_uv.v }
+					{ triangle_after_clipping.texcoords[0].u, triangle_after_clipping.texcoords[0].v },
+					{ triangle_after_clipping.texcoords[1].u, triangle_after_clipping.texcoords[1].v },
+					{ triangle_after_clipping.texcoords[2].u, triangle_after_clipping.texcoords[2].v }
 				},
 				.color = triangle_color
 			};
