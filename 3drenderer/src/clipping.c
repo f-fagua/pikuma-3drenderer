@@ -77,7 +77,62 @@ polygon_t create_polygon_from_triangle(vec3_t v0, vec3_t v1, vec3_t v2)
 
 void clip_polygon_against_plane(polygon_t* polygon, int plane)
 {
-	// TODO: how we clip against the plane
+	vec3_t plane_point = frustrum_planes[plane].point;
+	vec3_t plane_normal = frustrum_planes[plane].normal;
+
+	// Declare a static array of inside vertices that will be part of the final destination polygon returned via parameter
+	vec3_t inside_vertices[MAX_NUM_POLY_VERTICES];
+	int num_inside_vertices = 0;
+
+	// Start the current vertex with the first polygon vertex, and the previous with the last polygon vertex
+	vec3_t* current_vertex = &polygon->vertices[0];
+	vec3_t* previous_vertex = &polygon->vertices[polygon->num_vertices - 1];
+
+	// Calculate the dor product of the current and the previous vertex
+	float current_dot 	= 0;
+	float previous_dot 	= vec3_dot(vec3_sub(*previous_vertex, plane_point), plane_normal);
+
+	// Loop all the polygon vertices while the current is different than the last one
+	while (current_vertex != &polygon->vertices[polygon->num_vertices])
+	{
+		current_dot = vec3_dot(vec3_sub(*current_vertex, plane_point), plane_normal);
+
+		// If whe changed from iside to outside or from outside to inside
+		if (current_dot * previous_dot < 0) 
+		{
+			// Find the interpolation factor; 		t = dotQ1 / (dotQ1 - dotQ2)
+			float t = previous_dot / (previous_dot - current_dot);
+			// Calculate the intersection point; 	I = Q1 + t(Q2-Q1)
+			vec3_t intersection_point = vec3_clone(current_vertex);					// I = 		  Q2
+			intersection_point = vec3_sub(intersection_point, *previous_vertex); 	// I = 		 (Q2 - Q1)
+			intersection_point = vec3_mul(intersection_point, t);					// I = 		t(Q2 - Q1)
+			intersection_point = vec3_add(intersection_point, *previous_vertex);		// I = Q1 + t(Q2 - Q1)
+
+			// Insert the intersection point to the list of "inside vertices"
+			inside_vertices[num_inside_vertices] = vec3_clone(&intersection_point);
+			num_inside_vertices++;
+		}
+
+		// Current vertex is inside the plane
+		if (current_dot > 0)
+		{
+			// Insert the current vertex to the list of "inside vertices"
+			inside_vertices[num_inside_vertices] = vec3_clone(current_vertex);
+			num_inside_vertices++;
+		}
+
+		// Move to the next vertex
+		previous_dot = current_dot;
+		previous_vertex = current_vertex;
+		current_vertex++; // pointer arithmetic, C knows that ++ reffers to a vertex and moves as much memory as it occupies
+	}
+
+	// At the end, copy the list of inside vertices into the destination polygon (out parameter)
+	for (int i = 0; i < num_inside_vertices; i++)
+	{
+		polygon->vertices[i] = vec3_clone(&inside_vertices[i]);
+	}
+	polygon->num_vertices = num_inside_vertices;
 }
 
 void clip_polygon(polygon_t* polygon) 
