@@ -49,7 +49,7 @@ void setup(void)
 	init_light(vec3_new(0, 0, 1));
 
 	// Initialize the camera
-	init_camera(vec3_new(0, 0, 0), vec3_new(0, 0, 1), vec3_new(0, 0, 0), 0, 0);
+	init_camera(vec3_new(0, 0, 0), vec3_new(0, 0, 1));
 	
 	// Initialize the perspective projection matrix
 	float aspecty = (float)get_window_height() / (float)get_window_width();
@@ -133,44 +133,36 @@ void process_input(void)
 					set_cull_method(CULL_NONE);
 					break;
 				}
-				if (event.key.keysym.sym == SDLK_UP)
-				{
-					increment_camera_position_y(3 * delta_time);
-					break;
-				}
-				if (event.key.keysym.sym == SDLK_DOWN)
-				{
-					increment_camera_position_y(3 * delta_time);
-					break;
-				}
 				if (event.key.keysym.sym == SDLK_w)
 				{
-					set_camera_forward_velocity(vec3_mul(get_camera_direction(), 5.0 * delta_time)); 
-					break;
-				}
-				if (event.key.keysym.sym == SDLK_a)
-				{
-					increment_camera_yaw(1.0 * delta_time);
+					rotate_camera_pitch(+3.0 * delta_time);
 					break;
 				}
 				if (event.key.keysym.sym == SDLK_s)
 				{
-					set_camera_forward_velocity(vec3_mul(get_camera_direction(), -5.0 * delta_time));  
+					rotate_camera_pitch(-3.0 * delta_time);
 					break;
 				}
-				if (event.key.keysym.sym == SDLK_d)
+				if (event.key.keysym.sym == SDLK_RIGHT)
 				{
-					increment_camera_yaw(-1.0 * delta_time);
+					rotate_camera_yaw(+1.0 * delta_time);
 					break;
 				}
-				if (event.key.keysym.sym == SDLK_q)
+				if (event.key.keysym.sym == SDLK_LEFT)
 				{
-					increment_camera_pitch(1.0 * delta_time);
+					rotate_camera_yaw(-1.0 * delta_time);
 					break;
 				}
-				if (event.key.keysym.sym == SDLK_e)
+				if (event.key.keysym.sym == SDLK_UP)
 				{
-					increment_camera_pitch(-1.0 * delta_time);
+					update_camera_forward_velocity(vec3_mul(get_camera_direction(), 5.0 * delta_time));
+					update_camera_position(vec3_add(get_camera_position(), get_camera_forward_velocity()));
+					break;
+				}
+				if (event.key.keysym.sym == SDLK_DOWN)
+				{
+					update_camera_forward_velocity(vec3_mul(get_camera_direction(), 5.0 * delta_time));
+					update_camera_position(vec3_sub(get_camera_position(), get_camera_forward_velocity()));
 					break;
 				}
 				
@@ -203,37 +195,10 @@ void update(void)
 	num_triangles_to_render = 0;
 
 	// Change the mesh scale/rotation per animation frame
-	mesh.rotation.x += -0.2 * delta_time;
-	mesh.rotation.y += 0.0 * delta_time;
+	mesh.rotation.x += 0.0 * delta_time;
+	mesh.rotation.y += 0.3 * delta_time;
 	mesh.rotation.z += 0.0 * delta_time ;
-	mesh.translation.z = 3.0;
-
-	// Initialize the target
-	vec3_t target = { 0, 0, 1 };
-	mat4_t camera_pitch_rotation = mat4_make_rotation_x(get_camera_pitch());
-	mat4_t camera_yaw_rotation = mat4_make_rotation_y(get_camera_yaw());
-	set_camera_direction
-	(
-		vec3_from_vec4
-		(
-			mat4_mul_vec4
-			(
-				camera_pitch_rotation,
-				mat4_mul_vec4
-				(
-					camera_yaw_rotation, 
-					vec4_from_vec3(target)
-				)
-			)
-		)
-	);
-
-	// Offset the camera position in the direction where the camera is pointing at
-	target = vec3_add(get_camera_position(), get_camera_direction());
-	vec3_t up_direction = { 0, 1, 0 };
-
-	// Create the view matrix
-	view_matrix = mat4_look_at(get_camera_position(), target, up_direction);
+	mesh.translation.z = 5.0;
 
 	// Create a scale, rotation, and translation matrices that will be used to multiply the mesh vertices
 	mat4_t scale_matrix = mat4_make_scale(mesh.scale.x, mesh.scale.y, mesh.scale.z);
@@ -241,6 +206,11 @@ void update(void)
 	mat4_t rotation_x_matrix = mat4_make_rotation_x(mesh.rotation.x);
 	mat4_t rotation_y_matrix = mat4_make_rotation_y(mesh.rotation.y);
 	mat4_t rotation_z_matrix = mat4_make_rotation_z(mesh.rotation.z);
+
+	// Update camera look at target to create view matrix
+	vec3_t target = get_camera_lookat_target();
+	vec3_t up_direction = { 0, 1, 0 };
+	view_matrix = mat4_look_at(get_camera_position(), target, up_direction);
 
 	// Loop all the triangle faces of our mesh
 	int num_faces = array_length(mesh.faces);

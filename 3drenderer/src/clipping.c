@@ -1,7 +1,5 @@
 #include <math.h>
 #include "clipping.h"
-#include "vector.h"
-
 
 #define NUM_PLANES 6
 plane_t frustrum_planes[NUM_PLANES];
@@ -32,7 +30,6 @@ void init_frustrum_planes(float fovx, float fovy, float z_near, float z_far)
 {
 	float cos_half_fovx = cos(fovx / 2);
 	float sin_half_fovx = sin(fovx / 2);
-
 	float cos_half_fovy = cos(fovy / 2);
 	float sin_half_fovy = sin(fovy / 2);
 
@@ -75,7 +72,6 @@ polygon_t create_polygon_from_triangle(vec3_t v0, vec3_t v1, vec3_t v2, tex2_t t
 		.texcoords = {t0, t1, t2},
 		.num_vertices = 3
 	};
-
 	return polygon;
 }
 
@@ -135,6 +131,7 @@ void clip_polygon_against_plane(polygon_t* polygon, int plane)
 		{
 			// Find the interpolation factor; 		t = dotQ1 / (dotQ1 - dotQ2)
 			float t = previous_dot / (previous_dot - current_dot);
+			
 			// Calculate the intersection point; 	I = Q1 + t(Q2-Q1)
 			vec3_t intersection_point = 
 			{
