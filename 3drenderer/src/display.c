@@ -11,8 +11,8 @@ static uint32_t* color_buffer = NULL;
 static float* z_buffer = NULL;
 
 static SDL_Texture* color_buffer_texture = NULL;
-static int window_width = 800;
-static int window_height = 600;
+static int window_width = 320;
+static int window_height = 200;
 
 static int render_method = 0;
 static int cull_method = 0;
@@ -38,16 +38,16 @@ bool initialize_window(void)
 	// Use SDL to query what is the fullscreen max. width & height
 	SDL_DisplayMode display_mode;
 	SDL_GetCurrentDisplayMode(0, &display_mode);
-	window_width = display_mode.w;
-	window_height = display_mode.h;
+	int fullscreen_width = display_mode.w;
+	int fullscreen_height = display_mode.h;
 
 	// Create a SDL Window
 	window = SDL_CreateWindow(
 		NULL, 
 		SDL_WINDOWPOS_CENTERED,  	// initial x
 		SDL_WINDOWPOS_CENTERED,		// initial y
-		window_width,						// width
-		window_height,						// height
+		window_width,				// width
+		window_height,				// height
 		SDL_WINDOW_BORDERLESS		// ui option
 									// more falgs
 	);
