@@ -44,8 +44,9 @@ void setup(void)
 	// Initialize render mode and triangle culling method
 	set_render_method(RENDER_WIRE);
 	set_cull_method(CULL_BACKFACE);
-	//render_method = RENDER_WIRE;
-	//cull_method = CULL_BACKFACE;
+
+	// Initializa the scene light direction
+	init_light(vec3_new(0, 0, 1));
 
 	// Initialize the perspective projection matrix
 	float aspecty = (float)get_window_height() / (float)get_window_width();
@@ -194,7 +195,7 @@ void update(void)
 	mesh.rotation.x += -0.2 * delta_time;
 	mesh.rotation.y += 0.0 * delta_time;
 	mesh.rotation.z += 0.0 * delta_time ;
-	mesh.translation.z = 4.0;
+	mesh.translation.z = 3.0;
 
 	// Initialize the target
 	vec3_t target = { 0, 0, 1 };
@@ -336,7 +337,7 @@ void update(void)
 			}
 
 			// Calculate the shade intensity based on how aligned is the face normal and the inverse of the light ray
-			float light_intensity_factor = -vec3_dot(normal, light.direction);
+			float light_intensity_factor = -vec3_dot(normal, get_light_direction());
 
 			// Calculate the triangle color based on the light angle
 			uint32_t triangle_color = light_apply_intensity(mesh_face.color, light_intensity_factor);
