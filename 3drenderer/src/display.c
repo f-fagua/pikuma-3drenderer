@@ -11,8 +11,8 @@ static uint32_t* color_buffer = NULL;
 static float* z_buffer = NULL;
 
 static SDL_Texture* color_buffer_texture = NULL;
-static int window_width = 320;
-static int window_height = 200;
+static int window_width = 640;
+static int window_height = 400;
 
 static int render_method = 0;
 static int cull_method = 0;
@@ -40,6 +40,9 @@ bool initialize_window(void)
 	SDL_GetCurrentDisplayMode(0, &display_mode);
 	int fullscreen_width = display_mode.w;
 	int fullscreen_height = display_mode.h;
+
+	window_width = fullscreen_width / 3;
+	window_height = fullscreen_height / 3;
 
 	// Create a SDL Window
 	window = SDL_CreateWindow(
@@ -217,9 +220,6 @@ void clear_color_buffer(uint32_t color)
 	{
 		color_buffer[i] = color;
 	}
-
-	// Set the pixel at row 10 column 20 to the color red
-	// color_buffer[(window_width * 10) + 20] = 0xFFFF0000;
 }
 
 void clear_z_buffer()

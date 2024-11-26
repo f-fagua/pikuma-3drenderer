@@ -61,10 +61,10 @@ void setup(void)
 
 	// Loads the cube values in the mesh data structure
 	//load_cube_mesh_data();
-	load_obj_file_data("./assets/f117.obj");
+	load_obj_file_data("./assets/f22.obj");
 
 	// Load the texture information from an external PNG file
-	load_png_texture_data("./assets/f117.png");
+	load_png_texture_data("./assets/f22.png");
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -191,10 +191,10 @@ void update(void)
 	num_triangles_to_render = 0;
 
 	// Change the mesh scale/rotation per animation frame
-	mesh.rotation.x += 0.0 * delta_time;
+	mesh.rotation.x += -0.2 * delta_time;
 	mesh.rotation.y += 0.0 * delta_time;
 	mesh.rotation.z += 0.0 * delta_time ;
-	mesh.translation.z = 5.0;
+	mesh.translation.z = 4.0;
 
 	// Initialize the target
 	vec3_t target = { 0, 0, 1 };
