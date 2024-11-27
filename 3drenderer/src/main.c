@@ -45,11 +45,8 @@ void setup(void)
 	set_render_method(RENDER_WIRE);
 	set_cull_method(CULL_BACKFACE);
 
-	// Initializa the scene light direction
+	// Initialize the scene light direction
 	init_light(vec3_new(0, 0, 1));
-
-	// Initialize the camera
-	init_camera(vec3_new(0, 0, 0), vec3_new(0, 0, 1));
 	
 	// Initialize the perspective projection matrix
 	float aspecty = (float)get_window_height() / (float)get_window_width();
@@ -62,13 +59,9 @@ void setup(void)
 
 	// Initialize frustrum planes with a point and a normal
 	init_frustrum_planes(fovx, fovy, z_near, z_far);
-
-	// Loads the cube values in the mesh data structure
-	//load_cube_mesh_data();
-	load_obj_file_data("./assets/f22.obj");
-
-	// Load the texture information from an external PNG file
-	load_png_texture_data("./assets/f22.png");
+	// TODO: 
+	load_mesh("./assets/f22.obj", "./assets/f22.png", vec3_new(1,1,1), vec3_new(-3,0,0), vec3_new(0,0,0));
+	load_mesh("./assets/efa.obj", "./assets/efa.png", vec3_new(1,1,1), vec3_new(+3,0,0), vec3_new(0,0,0));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
