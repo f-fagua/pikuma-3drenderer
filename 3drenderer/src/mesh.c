@@ -3,25 +3,28 @@
 #include <string.h>
 #include "mesh.h"
 #include "array.h"
+#include "upng.h"
 
 #define MAX_NUM_MESHES 10
-static mesh_t meses[MAX_NUM_MESHES];
-static mesh_count = 0;
+static mesh_t meshes[MAX_NUM_MESHES];
+static int mesh_count = 0;
 
 void load_mesh(char* obj_filename, char* png_filename, vec3_t scale, vec3_t translation, vec3_t rotation)
 {
-	// TODO: 
-	// Load the OBJ file to our mesh
-	// Load the PNG file information to the mesh texture
-	// 
-	// Add the new mesh to the array of meshes
-	// mesh_count++ 
+	load_mesh_obj_data(&meshes[mesh_count], obj_filename);
+	load_mesh_png_data(&meshes[mesh_count], png_filename);
+
+	meshes[mesh_count].scale = scale;
+	meshes[mesh_count].translation = translation;
+	meshes[mesh_count].rotation = rotation;
+	
+	mesh_count++;
 }
 
-void load_obj_file_data(char* filename) 
+void load_mesh_obj_data(mesh_t* mesh, char* obj_filename) 
 {
 	FILE* file;
-	file = fopen(filename, "r");
+	file = fopen(obj_filename, "r");
 	
 	char line[1024];
 
@@ -35,7 +38,7 @@ void load_obj_file_data(char* filename)
 		if(strncmp(line, "v ", 2) == 0) 	
 		{
 			vec3_t vertex = parse_vertex(&line[0]);
-			array_push(mesh.vertices, vertex);
+			array_push(mesh->vertices, vertex);
 		}
 		if(strncmp(line, "vt ", 3) == 0) 	
 		{
@@ -47,7 +50,7 @@ void load_obj_file_data(char* filename)
 		if (strncmp(line, "f ", 2) == 0)
 		{
 			face_t face = parse_face(&line[0], texcoords);
-			array_push(mesh.faces, face);
+			array_push(mesh->faces, face);
 		}
 	}
 
@@ -102,3 +105,36 @@ face_t parse_face(char* line, tex2_t* texcoords)
 
 	return face;
 }	
+
+void load_mesh_png_data(mesh_t* mesh, char* png_filename) 
+{
+    upng_t* png_image = upng_new_from_file(png_filename);
+    if (png_image != NULL) 
+    {
+        upng_decode(png_image);
+        if (upng_get_error(png_image) == UPNG_EOK)
+        {
+            mesh->texture = png_image;
+        }
+    }
+}
+
+int get_num_meshes(void)
+{
+	return mesh_count;
+}
+
+mesh_t* get_mesh(int mesh_index)
+{
+	return &meshes[mesh_index];
+}
+
+void free_meshes(void)
+{
+	for (int i = 0; i < mesh_count; i++)
+	{
+		upng_free(meshes[i].texture);
+		array_free(meshes[i].faces);
+		array_free(meshes[i].vertices);
+	}
+}
