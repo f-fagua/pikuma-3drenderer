@@ -60,8 +60,8 @@ void setup(void)
 	// Initialize frustrum planes with a point and a normal
 	init_frustrum_planes(fovx, fovy, z_near, z_far);
 	
-	load_mesh("./assets/f22.obj", "./assets/f22.png", vec3_new(1,1,1), vec3_new(-3,0,0), vec3_new(0,0,0));
-	load_mesh("./assets/efa.obj", "./assets/efa.png", vec3_new(1,1,1), vec3_new(+3,0,0), vec3_new(0,0,0));
+	load_mesh("./assets/f22.obj", "./assets/f22.png", vec3_new(1, 1, 1), vec3_new(-3, 0, 8), vec3_new(0,0,0));
+	load_mesh("./assets/efa.obj", "./assets/efa.png", vec3_new(1, 1, 1), vec3_new(+3, 0, 8), vec3_new(0,0,0));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -350,7 +350,8 @@ void update(void)
 						{ triangle_after_clipping.texcoords[1].u, triangle_after_clipping.texcoords[1].v },
 						{ triangle_after_clipping.texcoords[2].u, triangle_after_clipping.texcoords[2].v }
 					},
-					.color = triangle_color
+					.color = triangle_color,
+					.texture = mesh->texture
 				};
 
 				// Save the projected triangle in the array of triangles to render
@@ -393,12 +394,12 @@ void render(void)
 		// Draw textured triangle
 		if (should_render_textured_triangle()) 
 		{
-			//draw_textured_triangle(
-			//	triangle.points[0].x, triangle.points[0].y, triangle.points[0].z, triangle.points[0].w, triangle.texcoords[0].u, triangle.texcoords[0].v,	// vertex A
-			//	triangle.points[1].x, triangle.points[1].y, triangle.points[1].z, triangle.points[1].w, triangle.texcoords[1].u, triangle.texcoords[1].v,	// vertex B
-			//	triangle.points[2].x, triangle.points[2].y, triangle.points[2].z, triangle.points[2].w, triangle.texcoords[2].u, triangle.texcoords[2].v,	// vertex C
-			//	mesh_texture
-			//);	
+			draw_textured_triangle(
+				triangle.points[0].x, triangle.points[0].y, triangle.points[0].z, triangle.points[0].w, triangle.texcoords[0].u, triangle.texcoords[0].v,	// vertex A
+				triangle.points[1].x, triangle.points[1].y, triangle.points[1].z, triangle.points[1].w, triangle.texcoords[1].u, triangle.texcoords[1].v,	// vertex B
+				triangle.points[2].x, triangle.points[2].y, triangle.points[2].z, triangle.points[2].w, triangle.texcoords[2].u, triangle.texcoords[2].v,	// vertex C
+				triangle.texture
+			);	
 		}
 
 		// Draw unfilled triangle
