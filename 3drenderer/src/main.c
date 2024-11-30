@@ -247,7 +247,7 @@ void process_graphics_pipeline_stages(mesh_t* mesh)
 		// Calculate the triangle face normal
 		vec3_t face_normal = get_triangle_normal(transformed_vertices);
 		
-		if (is_cull_backface()) 
+		if (should_cull_backface()) 
 		{
 			// Find the vector between vertex A in the triangle and the camera origin 
 			vec3_t camera_ray = vec3_sub(vec3_new(0, 0, 0), vec3_from_vec4(transformed_vertices[0]));
@@ -422,7 +422,7 @@ void render(void)
 		}
 
 		// Draw unfilled triangle
-		if (should_render_unfiled_triangle())
+		if (should_render_wire())
 		{
 			draw_triangle(
 				triangle.points[0].x, triangle.points[0].y, 	// vertex A
@@ -433,7 +433,7 @@ void render(void)
 		}
 
         // Draw triangle vertex points
-		if (should_render_wired_vertex())
+		if (should_render_wire_vertex())
 		{
 			draw_rect(triangle.points[0].x - 3, triangle.points[0].y - 3, 6, 6, 0xFF0000FF);
 			draw_rect(triangle.points[1].x - 3, triangle.points[1].y - 3, 6, 6, 0xFF0000FF);
@@ -457,7 +457,7 @@ void free_resources(void)
 
 int main(void)
 {
-	is_running = initialize_window();
+	is_running = init_window();
 
 	setup();
 

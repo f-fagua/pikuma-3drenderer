@@ -8,42 +8,43 @@
 #define FPS 120
 #define FRAME_TARGET_TIME (1000 / FPS)
 
-enum cull_method {
-	CULL_NONE,
-	CULL_BACKFACE
+enum cull_method 
+{
+    CULL_NONE,
+    CULL_BACKFACE
 };
 
-enum render_method {
-	RENDER_WIRE,
-	RENDER_WIRE_VERTEX,
-	RENDER_FILL_TRIANGLE,
-	RENDER_FILL_TRIANGLE_WIRE,
-	RENDER_TEXTURED,
-	RENDER_TEXTURED_WIRE
+enum render_method 
+{
+    RENDER_WIRE,
+    RENDER_WIRE_VERTEX,
+    RENDER_FILL_TRIANGLE,
+    RENDER_FILL_TRIANGLE_WIRE,
+    RENDER_TEXTURED,
+    RENDER_TEXTURED_WIRE
 };
 
-bool initialize_window(void);
+bool init_window(void);
 int get_window_width(void);
 int get_window_height(void);
 
-void set_render_method(int);
-void set_cull_method(int);
-bool is_cull_backface(void);
-
-bool should_render_filled_triangle(void);
+void set_render_method(int method);
+void set_cull_method(int method);
+bool should_render_wire(void);
+bool should_render_wire_vertex(void);
 bool should_render_textured_triangle(void);
-bool should_render_unfiled_triangle(void);
-bool should_render_wired_vertex(void);
+bool should_render_filled_triangle(void);
+bool should_cull_backface(void);
 
 void draw_grid(int grid_size, uint32_t grid_color);
 void draw_pixel(int x, int y, uint32_t color);
 void draw_line(int x0, int y0, int x1, int y1, uint32_t color);
-void draw_triangle(int x0, int y0, int x1, int y1, int x2, int y2, uint32_t color);
-void draw_rect(int rect_x, int rect_y, int width, int height, uint32_t rect_color);
+void draw_rect(int x, int y, int width, int height, uint32_t color);
 
-void render_color_buffer(void);
 void clear_color_buffer(uint32_t color);
 void clear_z_buffer(void);
+void render_color_buffer(void);
+
 float get_zbuffer_at(int x, int y);
 void update_zbuffer_at(int x, int y, float value);
 
