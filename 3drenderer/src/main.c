@@ -58,7 +58,7 @@ void setup(void)
 	proj_matrix = mat4_make_perspective(fovy, aspecty, z_near, z_far);
 
 	// Initialize frustrum planes with a point and a normal
-	init_frustrum_planes(fovx, fovy, z_near, z_far);
+	init_frustum_planes(fovx, fovy, z_near, z_far);
 	
 	load_mesh("./assets/runway.obj", "./assets/runway.png", vec3_new(1, 1, 1), vec3_new(0, -1.5, +23), vec3_new(0, 0, 0));
     load_mesh("./assets/f22.obj", "./assets/f22.png", vec3_new(1, 1, 1), vec3_new(0, -1.3, +5), vec3_new(0, -M_PI/2, 0));
@@ -262,7 +262,7 @@ void process_graphics_pipeline_stages(mesh_t* mesh)
 		}
 
 		// Create a polygom from the original transfrom 
-		polygon_t polygon = create_polygon_from_triangle
+		polygon_t polygon = polygon_from_triangle
 		(
 			vec3_from_vec4(transformed_vertices[0]),
 			vec3_from_vec4(transformed_vertices[1]),
