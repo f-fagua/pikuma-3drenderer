@@ -317,7 +317,7 @@ void process_graphics_pipeline_stages(mesh_t* mesh)
 			float light_intensity_factor = -vec3_dot(face_normal, get_light_direction());
 
 			// Calculate the triangle color based on the light angle
-			uint32_t triangle_color = light_apply_intensity(mesh_face.color, light_intensity_factor);
+			uint32_t triangle_color = apply_light_intensity(mesh_face.color, light_intensity_factor);
 
 			triangle_t triangle_to_render = 
 			{
