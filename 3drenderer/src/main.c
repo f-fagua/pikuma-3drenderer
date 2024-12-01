@@ -291,7 +291,7 @@ void process_graphics_pipeline_stages(mesh_t* mesh)
 			for (int j = 0; j < 3; j++)
 			{
 				// Project the current vertex
-				projected_points[j] = mat4_mul_vec4_project(proj_matrix, triangle_after_clipping.points[j]);
+				projected_points[j] = mat4_mul_vec4(proj_matrix, triangle_after_clipping.points[j]);
 
 				// Perform perspective divide
                 if (projected_points[j].w != 0) 
